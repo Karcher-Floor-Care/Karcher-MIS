@@ -1,0 +1,95 @@
+{
+  "name": "Flotilla Test Software",
+  "targets": [
+  {
+    "id": 1,
+    "title": "Controller",
+    "config":
+    {
+      "supportsPassThru": true,
+      "code": 32,
+      "type": 1
+
+    },
+    "spaces": [
+    {
+
+      "title": "Controller Application",
+      "filename": "86425820_REV_7.1.X.production.hex",
+      "targetSpace": 0,
+      "type": "PIC18Application",
+      "auto": true,
+      "enquireTimeout": 250,
+      "enquireRetries": 20,
+      "selectTimeout": 250,
+      "eraseTimeout": 5000,
+      "dataTimeout": 250,
+      "dataRetries": 1,
+      "verifyTimeout": 5000,
+      "finishTimeout": 1000,
+      "hexBlock": 64,
+      "sendBlock": 64,
+      "addressing": 1
+
+    }]
+  },
+  {
+    "id": 2,
+    "title": "HMI",
+    "config":
+    {
+      "supportsPassThru": false,
+      "code": 0,
+      "type": 2
+
+    },
+    "spaces": [
+    {
+      "title": "HMI Application",
+      "targetSpace": 0,
+      "type": "PIC24Application",
+      "auto": true,
+
+      "filename": "86427880_REV_8.0.X.production.hex.upgrade.hex",
+
+      "enquireTimeout": 500,
+      "selectTimeout": 500,
+      "eraseTimeout": 5000,
+      "dataTimeout": 500,
+      "verifyTimeout": 5000,
+      "finishTimeout": 1000
+
+    },
+    {
+      "title": "HMI Flash #1",
+      "targetSpace": 1,
+      "type": "W25ExtFlash",
+      "auto": true,
+
+      "filename": "external_resource_main_0.hex",
+
+      "hexBlock": 4096,
+      "sendBlock": 4096,
+      "addressing": 1,
+      "dataTimeout": 2000,
+      "eraseTimeout": 60000,
+      "verifyTimeout": 60000
+    },
+    {
+      "title": "HMI Flash #2",
+      "targetSpace": 2,
+      "type": "W25ExtFlash",
+      "auto": true,
+      "hide": true,
+      
+      "filename": "64MB.hex",
+
+      "hexBlock": 4096,
+      "sendBlock": 4096,
+      "addressing": 1,
+      "dataTimeout": 2000,
+      "eraseTimeout": 60000,
+      "verifyTimeout": 60000
+    }]
+  }]
+}

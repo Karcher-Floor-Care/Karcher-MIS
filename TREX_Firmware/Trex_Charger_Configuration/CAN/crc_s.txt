@@ -1,0 +1,6 @@
+softCRC(FFE9)
+algoCRC(C9A0)
+configCRC(E085)
+overallCRC(AA0E)
+nodeId(10)
+baudRate(500)

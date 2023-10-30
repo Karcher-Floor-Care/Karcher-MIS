@@ -1,0 +1,34 @@
+{
+
+  "targets": [
+  {
+    "id": null,
+    "title": "VCM",
+    "config": {
+
+      "supportsPassThru": false,
+      "code": "any",
+      "type": ""
+    }, 
+    "spaces": [
+      {
+        "title": "Application",
+        "filename": "VCM.Upgrade.hex",
+        "targetSpace": 0,
+        "type": "PIC24Application",
+        "enquireTimeout": 100,
+        "selectTimeout": 500,
+        "eraseTimeout" : 1000,
+        "dataTimeout": 2000,
+        "dataRetries": 1,
+        "verifyTimeout": 1000,
+        "finishTimeout": 500,
+        "hexBlock": 2048,
+        "sendBlock": 1536
+      }
+    ]
+  }
+
+  ]
+
+}
