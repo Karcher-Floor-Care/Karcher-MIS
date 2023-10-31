@@ -5,8 +5,7 @@ Once the application has been downloaded click the "Download Documentation" butt
 
 Install FTDI drivers using the 'CDM212364_Setup.exe' found in the 'FTDI-Driver' folder  
 Install 'pcanview.exe'.  This is located in the 'pcanview' folder  
-Install Peak drivers for Windows machines from the website [HERE](https://www.peak-system.com/quick/DrvSetup)   
-b. 
+Install Peak drivers for Windows machines from the website [HERE](https://www.peak-system.com/quick/DrvSetup)  
   
 Instructions for use are found in the "Trex Flotilla Service Tool User Guide"  
 Additional detailed instructions for programming TREX machines are provided.
