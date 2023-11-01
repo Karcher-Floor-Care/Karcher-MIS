@@ -9,3 +9,6 @@ Install Peak drivers for Windows machines from the website [HERE](https://www.pe
   
 Instructions for use are found in the "Trex Flotilla Service Tool User Guide"  
 Additional detailed instructions for programming TREX machines are provided.
+
+# Note
+This application has been enabled with auto-updates. If a new release is detected the application will prompt the user to download and install the newest version.
