@@ -15,7 +15,7 @@
     {
 
       "title": "Controller Application",
-      "filename": "86425820_REV_7.1.X.production.hex",
+      "filename": "Flotilla_VCM_3.0.8.hex",
       "targetSpace": 0,
       "type": "PIC18Application",
       "auto": true,
@@ -50,7 +50,7 @@
       "type": "PIC24Application",
       "auto": true,
 
-      "filename": "86427880_REV_8.0.X.production.hex.upgrade.hex",
+      "filename": "Flotilla_HMI_3.0.8.hex",
 
       "enquireTimeout": 500,
       "selectTimeout": 500,
@@ -66,7 +66,7 @@
       "type": "W25ExtFlash",
       "auto": true,
 
-      "filename": "external_resource_main_0.hex",
+      "filename": "Flotilla_Images_3.0.8.hex",
 
       "hexBlock": 4096,
       "sendBlock": 4096,
