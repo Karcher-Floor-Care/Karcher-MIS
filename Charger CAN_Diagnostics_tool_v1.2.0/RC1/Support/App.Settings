@@ -1,0 +1,12 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Settings>
+  <BaudRate>125</BaudRate>
+  <PCANChannel>1</PCANChannel>
+  <NodeID>10</NodeID>
+  <EDSFilePath>V:\Software\Releases\IC CAN Reprogramming\500-0117 IC CAN Reprog Tool\v1.2.0\Support\ICSeriesStdCANConfig.eds</EDSFilePath>
+  <BaudRates>125,250,500,1000</BaudRates>
+  <Timeout>15</Timeout>
+  <AuthReqParams>184,186,238</AuthReqParams>
+  <ProgrammerCOBId>580</ProgrammerCOBId>
+  <ChargerCOBId>600</ChargerCOBId>
+</Settings>

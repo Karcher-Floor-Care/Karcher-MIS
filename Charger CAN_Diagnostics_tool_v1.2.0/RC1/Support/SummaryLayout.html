@@ -1,0 +1,1765 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta charset="utf-8" />
+<HTA:APPLICATION
+    APPLICATIONNAME="Run Exe or Bat files"
+    ID="Product Config Form"
+    VERSION="1.0"/>
+
+<title>Summary</title>
+
+<script>
+var ASCII = "ascii";
+var FLOAT32 = "float32";
+var UINT32 = "uint32";
+var UINT16 = "uint16";
+var UINT32ARRAY = "uint32Array";
+var PRIMITIVE = "primitive";
+var BOOL = "bool";
+
+var idTypes = {
+    "ascii": ASCII,
+    "0": ASCII,
+    "1": ASCII,
+    "4": FLOAT32,
+    "8": UINT32,
+    "9": UINT32,
+    "10": UINT32,
+    "15": UINT32,
+    "16": UINT32,
+    "17": UINT32,
+    "18": UINT32,
+    "19": UINT32,
+    "20": UINT32,
+    "21": UINT32,
+    "25": PRIMITIVE,
+    "27": PRIMITIVE,
+    "67": PRIMITIVE,
+    "71": ASCII,
+    "75": UINT16,
+    "77": UINT32,
+    "86": BOOL,
+    "172": FLOAT32,
+    "174": FLOAT32,
+    "183": FLOAT32,
+    "234": BOOL,
+    "239": ASCII,
+    "241": UINT16,
+    "287": ASCII,
+    "288": ASCII,
+    "290": ASCII,
+    "293": ASCII,
+    "297": FLOAT32,
+    "309": FLOAT32,
+    "350": UINT32,
+    "365": UINT32ARRAY
+}
+
+
+function Interpret(id, rawBinary) {
+
+    var type = idTypes[id];
+
+    if (type == undefined || type == null) {
+        throw "Type unknown for dsID: " + id;
+    }
+
+    var binaryArray = rawBinary.split(" ");
+
+    if (binaryArray.length < 1) {
+        throw "No value found in charger.";
+    }
+
+    switch (type) {
+        case (ASCII):
+            var result = "";
+            for (var i = 0; i < binaryArray.length; i++) {
+                if (Number(binaryArray[i], 16) != 0) {
+                    result += String.fromCharCode(parseInt(binaryArray[i], 16));
+                }
+            }
+            if (result === "") {
+                throw "No value found in charger.";
+            } else {
+                return result;
+            }
+
+        case (FLOAT32):
+            var data = new ArrayBuffer(4);
+            for (var i = 0; i < binaryArray.length; i++) {
+                data[i] = parseInt(binaryArray[i], 16)
+
+            }
+
+            var buf = new ArrayBuffer(4);
+            // Create a data view of it
+            var view = new DataView(buf);
+
+            // set bytes
+            for (var i = 0; i < 4; i++) {
+                view.setUint8(i, data[i]);
+            }
+
+            // Read the bits as a float; note that by doing this, we're implicitly
+            // converting it from a 32-bit float into JavaScript's native 64-bit double
+            var num = view.getFloat32(0);
+
+            return num.toString();
+
+        case (PRIMITIVE):
+            var result = rawBinary;
+
+            return result;
+
+        case (UINT32):
+            var hex = binaryArray[3] + binaryArray[2] + binaryArray[1] + binaryArray[0];
+            var int = parseInt(hex, 16);
+
+            return int;
+
+        case (UINT16):
+            var hex = binaryArray[1] + binaryArray[0];
+            var int = parseInt(hex, 16);
+            return int;
+
+        case (UINT32ARRAY):
+
+            var resultArray = [];
+
+            if (binaryArray.length <= 4)
+                throw "No value found in charger.";
+
+            for (var i = 0; i + 3 < binaryArray.length; i += 4) {
+                var hex = binaryArray[i + 3] + binaryArray[i + 2] + binaryArray[i + 1] + binaryArray[i + 0];
+                var int = parseInt(hex, 16);
+                resultArray.push(int);
+            }
+
+            return resultArray;
+
+        case (BOOL):
+
+            return (parseInt(rawBinary) == 1);
+
+        default:
+            throw "type of " + "\"" + type + "\"" + "is undefined.";
+    }
+}
+</script>
+<script>
+    //Variant names
+    var variantDict = {
+        0: "Standard",
+        1: "Club Car"
+    }
+
+    var NodeIdGuesses = [10, 9, 11, 51, 8, 12, 52, 7, 13, 53, 6, 14, 54, 5, 15, 55];
+    var baudRateGuesses = [1000, 125, 250, 500];
+    var channelGuesses = [1, 2];
+
+    var hexRegex = new RegExp('^([0-9a-f]{2} ?)+$', 'm');
+    var tagValues;
+    var availableAlgoList;
+
+    var selectedChargerIndex = -1;
+
+    var passedInCharger = "$chargerInfo$";
+    var chargerList = [];
+
+    //Escape key pressed
+    document.addEventListener("keypress", function (event) {
+        if (event.keyCode == 27) {
+            HideAllPanels();
+        }
+    })
+
+    function HideAllPanels() {
+        //Close all panels
+        document.getElementById("AddChargerPanel").style.visibility = "hidden";
+        document.getElementById("calculateResistancePanel").style.visibility = "hidden"; 
+    }
+
+    function Initialize() {
+        //Hide charger options when nodeId and br is passed in from C# (or other places)
+        if (Array.isArray(passedInCharger)) {
+            document.getElementById("ChargersOptions").style.display = "none";
+            chargerList = passedInCharger;
+            selectedChargerIndex = 0;
+        }
+
+        // First check if charger supports reading values
+        // if software version is 5.x.x or greater, OK
+        //First, try read 100A subindex 0 for software version
+        if (selectedChargerIndex != -1) {
+            document.getElementById("Overlay").style.visibility = "visible";
+
+            var returnLines = RunCO_PCAN_Demo("-mode 1"
+                + " -br " + chargerList[selectedChargerIndex]["br"]
+                + " -tout " + "10"
+                + " -nodeId " + chargerList[selectedChargerIndex]["nodeId"]
+                + " -rdIdx " + "4106"
+                + " -rdSubIdx " + "0"
+                + " -rdSize " + "1",
+                "Verifying Charger software version...");
+
+            var checkBytes = GetBytesFromCoPcanDemoCall(returnLines);
+            if (checkBytes["isError"] == 1) {
+                //If failed to read 100A, try read 1018 SubIndex 3 for > 0x00020004
+                var returnLines = RunCO_PCAN_Demo("-mode 1"
+                    + " -br " + chargerList[selectedChargerIndex]["br"]
+                    + " -tout " + "10"
+                    + " -nodeId " + chargerList[selectedChargerIndex]["nodeId"]
+                    + " -rdIdx " + "4120"
+                    + " -rdSubIdx " + "3"
+                    + " -rdSize " + "1",
+                    "Verifying Charger software version...");
+                var checkBytes = GetBytesFromCoPcanDemoCall(returnLines);
+                if (checkBytes["isError"] == 1) {
+                    alert("Failed to read from charger. " + checkBytes["value"]);
+                    document.getElementById("OverlayText").innerHTML = "Failed to read from charger. " + checkBytes["value"];
+                    return;
+                } else {
+                    var bytes = checkBytes["value"];
+                    if (parseInt(bytes[0] + bytes[1] + bytes[2] + bytes[3]) < 0x00020004) {
+                        alert("Charger software version does not support reading summary information");
+                        document.getElementById("OverlayText").innerHTML = "Charger software version does not support reading summary information";
+                        return;
+                    }
+                }
+            }
+            else {
+                var interp = Interpret("ascii", checkBytes["value"]);
+                var SwMajor = parseInt(interp.split('.')[0]);
+
+                if (SwMajor < 5) {
+                    alert("Charger software version does not support reading summary information");
+                    document.getElementById("OverlayText").innerHTML = "Charger software version does not support reading summary information";
+                    return;
+                }
+            }
+        }
+
+        //Get tag values
+        tagValues = [
+                {
+                    "Tag": "serialNumber",
+                    "Value": CallAndInterpret("0")["value"],
+                },
+                {
+                    "Tag": "chargerModel",
+                    "Value": CallAndInterpret("1")["value"],
+                },
+                {
+                    "Tag": "deltaQFGA",
+                    "Value": CallAndInterpret("71")["value"].replace("_", "."),
+                },
+                {
+                    "Tag": "customerHWPartNumber",
+                    "Value": CallAndInterpret("239")["value"],
+                },
+                {
+                    "Tag": "customerSWPartNumber",
+                    "Value": CallAndInterpret("287")["value"],
+                },
+                {
+                    "Tag": "customerAssemblyPartNumber",
+                    "Value": CallAndInterpret("288")["value"],
+                },
+                {
+                    "Tag": "customerModelName",
+                    "Value": CallAndInterpret("290")["value"],
+                },
+                {
+                    "Tag": "customerSerialNumber",
+                    "Value": CallAndInterpret("293")["value"],
+                },
+                {
+                    "Tag": "swVersionAndVariant",
+                    "Value": GetActiveSoftwareFormat(),
+                },
+                {
+                    "Tag": "activeAlgo",
+                    "Value": GetActiveChargingProfileFormat(),
+                },
+                {
+                    "Tag": "batteryCapacity",
+                    "Value": AddUnits(CallAndInterpret("172"), "Ah"),
+                },
+                {
+                    "Tag": "batteryPackTargetVoltage",
+                    "Value": AddUnits(CallAndInterpret("174"), "V"),
+                },
+                {
+                    "Tag": "totalCharges_charger",
+                    "Value": CallAndInterpret("8")["value"],
+                },
+                {
+                    "Tag": "totalCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 0),
+                },
+                {
+                    "Tag": "completedCharges_charger",
+                    "Value": CallAndInterpret("15")["value"],
+                },
+                {
+                    "Tag": "completedCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 5),
+                },
+                {
+                    "Tag": "opportunisticCharges_charger",
+                    "Value": CallAndInterpret("18")["value"],
+                },
+                {
+                    "Tag": "opportunisticCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 8),
+                },
+                {
+                    "Tag": "equalisationCharges_charger",
+                    "Value": CallAndInterpret("16")["value"],
+                },
+                {
+                    "Tag": "equalisationCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 6),
+                },
+                {
+                    "Tag": "acInterruptedCharges_charger",
+                    "Value": CallAndInterpret("20")["value"],
+                },
+                {
+                    "Tag": "acInterruptedCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 10),
+                },
+                {
+                    "Tag": "dcInterruptedCharges_charger",
+                    "Value": CallAndInterpret("19")["value"],
+                },
+                {
+                    "Tag": "dcInterruptedCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 9),
+                },
+                {
+                    "Tag": "maintenanceCharges_charger",
+                    "Value": CallAndInterpret("17")["value"],
+                },
+                {
+                    "Tag": "maintenanceCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 7),
+                },
+                {
+                    "Tag": "equivalentFullCharges_charger",
+                    "Value": CallAndInterpret("21")["value"],
+                },
+                {
+                    "Tag": "equivalentFullCharges_battery",
+                    "Value": GetOffset(CallAndInterpret("365"), 11),
+                },
+                {
+                    "Tag": "maxCurrent",
+                    "Value": AddUnits(CallAndInterpret("297"), "A"),
+                },
+                {
+                    "Tag": "maxVoltage",
+                    "Value": AddUnits(CallAndInterpret("309"), "V"),
+                },
+                {
+                    "Tag": "shutdownTime",
+                    "Value": GetShutdownTime()
+                },
+                {
+                    "Tag": "acCycleStopTime",
+                    "Value": GetAcCycleStopTime()
+                },
+                {
+                    "Tag": "cableResistance",
+                    "Value": AddUnits(CallAndInterpret("4"), "mΩ"),
+                }
+        ];
+
+        /* Check if charger is stackable/Parallel system, disable modifying if it is
+         * We need to read Ds ID: 241 DS_ID_PARALLEL_CHG_CONTROL, to see if we are connected to a parallel system
+         * <doc>Control word for parallel charging.
+         * Bit 0: Indicates if parallel charging is enabled. <-- we need to check this
+         * Bits 3:1 Reserved. Leave set to zero
+         * Bits 7:4 Indicate the expected number of slaves. 0 - means variable number, 1-5 indicates a fixed number is expected
+         * Bits 15:8 Reserved. Leave set to zero</doc>
+         */
+        {
+            CancelModifyMode();
+
+            if (parseInt(CallAndInterpret(241)["value"]) % 2 == 1) {
+                //Means parallel, disable modify here
+                document.getElementById("modifyButton").style.display = "none";
+            }
+        }
+
+        //Hide unneccessary panels and html elements
+        {
+            HideAllPanels();
+            document.getElementById("submitAndCancelButton").style.visibility = "hidden";
+            document.getElementById("Overlay").style.visibility = "hidden";
+        }
+
+        //Fill fields in html
+        for (var i = 0; i < tagValues.length; i++) {
+            var element = document.getElementById(tagValues[i]["Tag"]);
+            if (element != undefined) {
+                element.innerHTML = tagValues[i]["Value"];
+            }
+            var modifyElement = document.getElementById(tagValues[i]["Tag"] + "_modify");
+            if (modifyElement != undefined) {
+                modifyElement.style.display = "none";
+            }
+        }
+
+        //Fill available charging profiles table
+        GetAvailableChargingProfiles();
+
+        //Get and display nodeId/BaudRate buttons selection tabs
+        RefreshChargerSelectionTabs();
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+    function CallAndInterpret(dsId) {
+        //Get bytes from charger
+        {
+            if (selectedChargerIndex >= chargerList.length || selectedChargerIndex == -1) {
+                return { "isError": 1, "value": "No charger selected." };;
+            }
+
+            var returnLines = RunCO_PCAN_Demo("-mode 4"
+                + " -br " + chargerList[selectedChargerIndex]["br"]
+                + " -tout " + "10"
+                + " -nodeId " + chargerList[selectedChargerIndex]["nodeId"]
+                + " -dsId " + dsId,
+                "Retrieving charger values...");
+
+            var checkBytes = GetBytesFromCoPcanDemoCall(returnLines);
+            if (checkBytes["isError"] == 1) {
+                return { "isError": 1, "value": checkBytes["value"] };
+            }
+        }
+
+        try {
+            var result = Interpret(dsId, checkBytes["value"]);
+            return { "isError": 0, "value": result };
+        } catch (e) {
+            return { "isError": 1, "value": e };
+        }
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+    /*
+     * Added for SSP-9650: Add cumulative counters
+     */
+    function GetOffset(interpResult, offset) {
+        if (interpResult.isError == 1) {
+            return interpResult.value;
+        }
+
+        if (!Array.isArray(interpResult.value)) {
+            return "Invalid type passed into function";
+        }
+
+        if (interpResult.value.length <= offset) {
+            return "No value found";
+        }
+
+        return interpResult.value[offset];
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+    function AddUnits(interpResult, units) {
+        if (interpResult.isError == 1) {
+            return interpResult.value;
+        }
+        else {
+            return interpResult["value"] + units;
+        }
+    }
+
+    function VerifyRange(num, min, max) {
+        if (num == undefined || num == "")
+            return undefined;
+
+        if (parseInt(num) >= min && parseInt(num) <= max)
+            return num;
+        else {
+            throw "Input not in range! Valid range: 0-150mΩ";
+        }
+    }
+
+    function RunCO_PCAN_Demo(params, overlayText) {
+
+        document.getElementById("Overlay").style.visibility = "visible";
+        document.getElementById("OverlayText").innerHTML = overlayText;
+        document.body.style.cursor = "wait";
+
+        //var tshell = new ActiveXObject("WScript.Shell");
+        //var tpath = '"V:\\Software\\Releases\\IC CAN Reprogramming\\WIP\\Mode 5\\CO_PCAN_DEMO.exe" ' + 
+        //            params + ' ' +
+        //            ' > "V:\\Software\\Releases\\IC CAN Reprogramming\\WIP\\Mode 5\\tmp\\test.txt"';
+        //            
+        //tshell.Run( tpath, 0, true );
+
+        {
+            try {
+                var sessStr = (new Date()).getTime().toString();
+
+                //TEMP until releasing new co_pcan_demo
+                var co_pcan_path = "V:\\Software\\Releases\\IC CAN Reprogramming\\WIP\\Mode 5";
+
+                // First construct a Batch file
+                var batFileWriteShell = new ActiveXObject("Scripting.FileSystemObject");
+                var batchFile = batFileWriteShell.OpenTextFile(co_pcan_path + '\\tmp\\BatchCall' + sessStr + '.bat', 2, true);
+                batchFile.WriteLine('call "' + co_pcan_path + '\\CO_PCAN_Demo.exe" ' + params + ' > "' + co_pcan_path + '\\tmp\\' + sessStr + '.out"');
+                batchFile.Close();
+
+                // Now call that batch file
+                var tshell = new ActiveXObject("WScript.Shell");
+                var tpath = 'cmd.exe /c "' + co_pcan_path + '\\tmp\\BatchCall' + sessStr + '.bat" ';
+                tshell.Run(tpath, 0, true);
+
+                // Get the Stdout, piped to the output
+                var fso = new ActiveXObject('Scripting.FileSystemObject');
+                var sessResPath = co_pcan_path + "\\tmp\\" + sessStr + ".out";
+
+                while (!fso.FileExists(sessResPath)) {
+                }
+
+                var flog = fso.OpenTextFile(sessResPath, 1, false);
+                var logContent = flog.ReadAll();
+                flog.Close();
+
+                document.getElementById("Overlay").style.visibility = "hidden";
+                document.body.style.cursor = "default";
+
+                return logContent.split("\n");
+            } catch (e) {
+                /*
+                 * Added for SSP-9635, add error handling
+                */
+                if (e == "ReferenceError: ActiveXObject is not defined") {
+                    document.getElementById("Overlay").style.visibility = "visible";
+                    document.getElementById("OverlayText").innerHTML = "Unsupported browser. Please use Internet explorer.";
+                    alert("Unsupported browser. Please use Internet explorer.");
+                }
+                else {
+                    document.getElementById("Overlay").style.visibility = "visible";
+                    document.getElementById("OverlayText").innerHTML = "Invalid security settings.";
+                    alert('Please enable ActiveX controls.' +
+                        'On Internet explorer, select the Tools button, and then select Internet options.' +
+                        'On the Security tab, select Custom level, and then under ActiveX controls and plug-ins, ' +
+                        'Select "enable" or "prompt" under "Initialize and script ActiveX controls not marked as safe for scripting".');
+                }
+            }
+        }
+        //{
+        //    var shell = new ActiveXObject("WScript.Shell");
+        //    var path = '"V:\\Software\\Releases\\IC CAN Reprogramming\\WIP\\Mode 5\\CO_PCAN_DEMO.exe" ' + params;
+        //    var shellExec = shell.Exec(path);
+        //
+        //    var stdValue = shellExec.StdOut.ReadAll();
+        //    return stdValue.split("\n");
+        //}
+    }
+
+    function GetBytesFromCoPcanDemoCall(returnLines) {
+        var error = "";
+        var rawBytes = "";
+
+        for (var i = 0; i < returnLines.length; i++) {
+            if (returnLines[i] != null) {
+                if (hexRegex.test(returnLines[i])) {
+                    rawBytes += returnLines[i];
+                }
+                if (error == "" && returnLines[i].indexOf("ErrorCodeAdditional") > -1) {
+                    error = returnLines[i].split(':')[1] + ". ";
+                }
+                if (returnLines[i].indexOf("Failure return code from initCan()") != -1) {
+                    error = "No connection to charger.";
+                }
+            }
+        }
+        if (error != "") {
+            return { "isError": 1, "value": error };
+        }
+        else if (rawBytes == "") { //Value is blank error
+            return { "isError": 1, "value": "No value found in charger." };
+        }
+        else {
+            return { "isError": 0, "value": rawBytes };
+        }
+    }
+
+    function GetActiveSoftwareFormat() {
+        var interp = CallAndInterpret("25");
+        if (interp["isError"] == 1) {
+            return interp["value"]; //Returns error message
+        } else {
+            var hexArray = interp["value"].split(' ');
+            var result = "";
+            if (hexArray.length >= 4) {
+                result += "v" + parseInt(hexArray[0]) + "." + parseInt(hexArray[1]) + "." + parseInt(hexArray[4]+hexArray[5], 16);
+                var swNumber = parseInt(hexArray[3]);
+                result += " " + variantDict[swNumber] + " Variant";
+                return result;
+            }
+
+            return result;
+        }
+    }
+
+    function GetActiveChargingProfileFormat() {
+        var interp = CallAndInterpret("27");
+        if (interp["isError"] == 1) {
+            return interp["value"];
+        } else {
+            var valueArray = interp["value"].split(" ");
+            if (valueArray.length >= 4) {
+                var algoVariant = parseInt(valueArray[1] + valueArray[0], 16)
+                var major = parseInt(valueArray[2], 16);
+                var minor = parseInt(valueArray[3]);
+                if (minor < 10)
+                    minor = "0" + minor.toString();
+                return "Algo #" + algoVariant + " v" + major + "." + minor;
+            } else {
+                return "Invalid version code";
+            }
+        }
+    }
+
+    function GetAvailableChargingProfiles() {
+        var table = document.getElementById("#AvailableChargingProfiles_table")
+
+        table.innerHTML = "";
+        //header
+        {
+            var header = table.createTHead();
+            var row = header.insertRow(0);
+            var cell = row.insertCell(0);
+            cell.innerHTML = "<b>Available charging profile(s)</b>";
+        }
+
+        var interp = CallAndInterpret("67");
+        if (interp["isError"] == 1) {
+            var newRow = table.insertRow();
+            var errorCell = newRow.insertCell(0);
+            errorCell.appendChild(document.createTextNode(interp["value"]));
+        } else {
+            var value = interp["value"].replace(/(\r\n|\n|\r)/gm, "");
+            var valueArray = value.split(" ");
+            var rowCount = 0;
+            for (var i = 0; i < valueArray.length; i+=6) {
+                if (valueArray.length >= i+4) {
+                    var algoVariant = parseInt(valueArray[i + 1] + valueArray[i + 0], 16);
+                    if (algoVariant == "65535")
+                        continue;
+                    var major = parseInt(valueArray[i+2], 16);
+
+                    var minor = parseInt(valueArray[i+3]);
+                    if (minor < 10)
+                        minor = "0" + minor.toString();
+
+                    {
+                        var newRow = table.insertRow();
+
+                        var versionCell = newRow.insertCell(0);
+                        var selectButtonCell = newRow.insertCell(1);
+
+                        var version = document.createTextNode("Algo " + "#" + algoVariant + " v" + major + "." + minor);
+                        versionCell.appendChild(version);
+
+                        var selectButton = document.createElement("button");
+                        selectButton.innerHTML = "Select algo";
+                        selectButton.setAttribute("onClick", 'ChangeActiveAlgo("' + valueArray[i] + valueArray[i + 1] + valueArray[i + 2] + valueArray[i + 3] + valueArray[i + 4] + valueArray[i + 5] + '")');
+                        selectButtonCell.appendChild(selectButton);
+                    }
+
+                    rowCount++;
+                } else {
+                    return "Invalid version code";
+                }
+            }
+
+            if (rowCount >= 8) {
+                document.getElementById("#AvailableChargingProfiles_section").setAttribute("style", "height:250px;overflow-y:scroll;margin-bottom: 0.5cm;");
+            } else {
+                document.getElementById("#AvailableChargingProfiles_section").setAttribute("style", "height:250px;margin-bottom: 0.5cm;");
+            }
+        }
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+    /*
+     * Added for SSP-9647: Select active algo
+    */
+    function ChangeActiveAlgo(bytes) {
+        ModifyDsId("27", bytes);
+        ResetCharger();
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+    /*
+     * Added for SSP-9637: Write/Read select charger configuration settings
+     * 
+     * - Read Time for the charger to have lost AC before it stops the current charger cycle - with options Never, Instant or a Time.
+     *       Never:  AC_CHG_SUSPEND_DISABLE = True, MAX_AC_SUSPEND_TIME_MS == don't care
+     *       Instant: AC_CHG_SUSPEND_DISABLE = False, MAX_AC_SUSPEND_TIME_MS = 0
+     *       Time:    AC_CHG_SUSPEND_DISABLE = False, MAX_AC_SUSPEND_TIME_MS = <SECS> or Milli secs, or some other scaling
+    */
+    function GetAcCycleStopTime() {
+
+        var suspendDisable = CallAndInterpret("86");
+
+        if (suspendDisable["isError"] == 1) {
+            return suspendDisable["value"];
+        }
+
+        if (suspendDisable["value"] == true) {
+            return "Never";
+        }
+        else {
+
+            var suspendTime = CallAndInterpret("77");
+            if (suspendTime["isError"] == 1) {
+                return suspendTime["value"];
+            }
+
+            if (suspendTime["value"] == 0) {
+                return "Instant";
+            }
+            else if (suspendTime["value"] == 600000) {
+                return "10 Minutes";
+            }
+            else if (suspendTime["value"] == 1000) {
+                return "1 second";
+            }
+            else {
+                return suspendTime["value"].toString() + "ms";
+            }
+        }
+    }
+
+    /*
+     * Added for SSP-9637: Write/Read select charger configuration settings
+     * 
+     * - Write Time for the charger to have lost AC before it stops the current charger cycle - with options Never, Instant or a Time.
+     *       Never:  AC_CHG_SUSPEND_DISABLE = True, MAX_AC_SUSPEND_TIME_MS == don't care
+     *       Instant: AC_CHG_SUSPEND_DISABLE = False, MAX_AC_SUSPEND_TIME_MS = 0
+     *       Time:    AC_CHG_SUSPEND_DISABLE = False, MAX_AC_SUSPEND_TIME_MS = <SECS> or Milli secs, or some other scaling
+    */
+    function GetAcCycleStopTimeField() {
+        var fieldValue = document.getElementById("acCycleStopTime_modify").value;
+
+        if (fieldValue == "Instant") {
+            return { "suspendDisable": "00", "suspendTime": "00000000" }
+        }
+        else if (fieldValue == "Never") {
+            return { "suspendDisable": "01", "suspendTime": "00000000" }
+        }
+        else {
+            var fieldToInt = TextToBytes(fieldValue, "uint32");
+
+            if (fieldToInt == undefined) {
+                return { "suspendDisable": undefined, "suspendTime": undefined }
+            }
+            else {
+                return { "suspendDisable": "00", "suspendTime": fieldToInt }
+            }
+        }
+    }
+
+    /*
+     * Added for SSP-9637: Write/Read select charger configuration settings
+     * Read Time for the charger to shutdown when running on DC only - Options should be Never, or a time,
+    */
+    function GetShutdownTime() {
+        /*
+         *     Shutdown timeout, in milliseconds. 
+         *     A DC-powered charger will shutdown after this many milliseconds.
+         *     This timeout will only take effect if DS_ID_SHDNTIMEOUT_HRS (75) is configured to be zero.
+         *     & shutdownDisable (234) is set to false
+        */
+        var shutdownTime = CallAndInterpret("350");
+        var shutdownTimeoutHrs = CallAndInterpret("75");
+        var shutdownDisable = CallAndInterpret("234");
+
+        if (shutdownTimeoutHrs["isError"] == 1) {
+            return shutdownTimeoutHrs["value"]; //returns error
+        }
+       
+        if (shutdownDisable["isError"] == 1) {
+            return shutdownDisable["value"]; //returns error
+        }
+        else {
+            if (shutdownDisable["value"] == 1)
+                return "Never";
+        }
+
+        if (shutdownTime["isError"] == 0) {
+            if (shutdownTimeoutHrs["value"] == 0) {
+                return shutdownTime["value"] + "ms";
+            } else {
+                return "Never";
+            }
+        }
+        else
+        {
+            return "3600000ms"; //for older SW versions (without DS-350), the min time is 1 hour)
+        }
+    }
+
+    /*
+     * Added for SSP-9637: Write/Read select charger configuration settings
+     * Write Time for the charger to shutdown when running on DC only - Options should be Never, or a time,
+    */
+    function GetShutdownField() {
+        var fieldValue = document.getElementById("shutdownTime_modify").value;
+
+        if (fieldValue == "Never") {
+            return { "shutdownDisable": "01", "shutdownTime": "00000000", "shutdownTimeoutHrs": undefined }
+        }
+        else {
+            var fieldToInt = TextToBytes(fieldValue, "uint32");
+
+            if (fieldToInt == undefined) {
+                return { "shutdownDisable": undefined, "shutdownTime": undefined, "shutdownTimeoutHrs": undefined }
+            }
+            else if (parseInt(fieldValue) < 60000) {
+                alert("Shutdown time too low, requires > 60000ms");
+                return { "shutdownDisable": undefined, "shutdownTime": undefined, "shutdownTimeoutHrs": undefined }
+            }
+            else {
+                return { "shutdownDisable": "00", "shutdownTime": fieldToInt, "shutdownTimeoutHrs": "0000" }
+            }
+        }
+    }
+
+    /*
+     * Added for SSP-9637: Write/Read select charger configuration settings
+     * 
+     * * Add ability to manually add charger we want to
+     *   view/ modify so we don't have to go through the slow process of detecting chargers.
+     */
+    function AddCharger(nodeId, baudRate) {
+        if (nodeId == "" || baudRate == "") {
+            alert("Values cannot be empty");
+        }
+        else {
+            var duplicateFound = false;
+            for (var i = 0; i < chargerList.length; i++) {
+                if (chargerList[i].nodeId == nodeId && baudRate == chargerList[i].br) {
+                    duplicateFound = true;
+                }
+            }
+            if (!duplicateFound) {
+                chargerList.push({
+                    br: baudRate,
+                    nodeId: nodeId
+                });
+            }
+        }
+        RefreshChargerSelectionTabs();
+        document.getElementById("AddChargerPanel").style.visibility = "hidden";
+    }
+
+    /*
+     * Added for SSP-9637: Write/Read select charger configuration settings
+    */
+    function DetectConfiguration() {
+        chargerList = [];
+
+        for (var k = 0; k < channelGuesses.length; k++) {
+            for (var i = 0; i < NodeIdGuesses.length; i++) {
+                for (var j = 0; j < baudRateGuesses.length; j++) {
+                    if (chargerList.length == 0 || chargerList[0].br == baudRateGuesses[j]) {
+                        var crcCheck = RunCO_PCAN_Demo("-mode 1 " +
+                            " -br " + baudRateGuesses[j] +
+                            " -tout " + "1" +
+                            " -nodeId " + NodeIdGuesses[i] +
+                            " -rdIdx " + "8022" +
+                            " -rdSubIdx " + "0" +
+                            " -rdSize " + "4" +
+                            " -channel " + channelGuesses[k],
+                            "Finding chargers...");
+
+                        var failed = false;
+
+                        for (var m = 0; m < crcCheck.length; m++) {
+                            if (crcCheck[m].indexOf("Failed") != -1) {
+                                failed = true;
+                            }
+                        }
+                        if (!failed) {
+                            chargerList.push({
+                                br: baudRateGuesses[j],
+                                nodeId: NodeIdGuesses[i]
+                            });
+                        }
+                    }
+                }
+            }
+        }
+
+        RefreshChargerSelectionTabs();
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+    */
+    function ChangeSelectedCharger(index) {
+        selectedChargerIndex = index;
+        Initialize();
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+    */
+    function RefreshChargerSelectionTabs() {
+        var tabElement = document.getElementById("ChargerSelectionTabs")
+        tabElement.innerHTML = "";
+        for (var i = 0; i < chargerList.length; i++) {
+            var button = document.createElement("button");
+            button.setAttribute('class', 'tablinks');
+            button.setAttribute('onClick', 'ChangeSelectedCharger(' + i + ')')
+            button.innerHTML = "Node id: " + chargerList[i]["nodeId"] + " " + "Baud Rate: " + chargerList[i]["br"];
+            tabElement.appendChild(button);
+            if (i == selectedChargerIndex) {
+                button.className += " active";
+            }
+        }
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+     *  The charger needs to restart in order for any modified charger values to take effect.
+    */
+    function ResetCharger() {
+        RunCO_PCAN_Demo("-mode 2"
+            + " -br " + chargerList[selectedChargerIndex]["br"]
+            + " -tout " + "10"
+            + " -nodeId " + chargerList[selectedChargerIndex]["nodeId"]
+            + " -wrIdx 16384"
+            + " -wrSubIdx 0"
+            + " -wrSize 2"
+            + " -wrVal 21930",
+            "Resetting charger...");
+
+        //Wait for charger to turn on
+        {
+            var result = "Failed";
+            while (result.indexOf("Failed") != -1) {
+                var result = RunCO_PCAN_Demo("-mode 1"
+                    + " -br " + chargerList[selectedChargerIndex]["br"]
+                    + " -tout " + "1"
+                    + " -nodeId " + chargerList[selectedChargerIndex]["nodeId"]
+                    + " -rdIdx 4096"
+                    + " -rdSubIdx 0"
+                    + " -rdSize 4",
+                    "Waiting for charger to turn back on...");
+            }
+        }
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+     *  
+     *  This function translates user input for modification into bytes to store into charger
+    */
+    function TextToBytes(text, type) {
+        if (text == "" || text == undefined) {
+            return undefined;
+        }
+        switch (type) {
+            case ("float32"):
+                {
+                    var num = text;
+                    var floatView = new Float32Array(1);
+                    floatView[0] = num;
+                    var intView = new Uint8Array(floatView.buffer);
+                    var result = "";
+
+                    for (var i = intView.length - 1; i >= 0; i--) {
+                        var hexString = intView[i].toString(16);
+                        while (hexString.length < 2) {
+                            hexString = "0" + hexString;
+                        }
+                        result += hexString
+                    }
+                    return result;
+                }
+            case ("uint32"):
+                {
+                    if (isNaN(text)) {
+                        alert("Modified field value is not a number!");
+                        return undefined; //If text is not a number, return undefined
+                    }
+
+                    hexString = parseInt(text).toString(16);
+                    while (hexString.length < 8) {
+                        hexString = "0" + hexString;
+                    }
+                    var hexStringFlippedBytes = "";
+
+                    for (var i = hexString.length - 2; i >= 0; i -= 2) {
+                        hexStringFlippedBytes += hexString[i] + hexString[i + 1];
+                    }
+                    return hexStringFlippedBytes;
+                }
+
+            default:
+                return undefined;
+        }
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+    */
+    function ModifyDsId(dsId, bytes) {
+        RunCO_PCAN_Demo("-mode 5"
+            + " -br " + chargerList[selectedChargerIndex]["br"]
+            + " -tout " + "10"
+            + " -nodeId " + chargerList[selectedChargerIndex]["nodeId"]
+            + " -dsId " + dsId
+            + " -dsInpVal " + bytes,
+            "Modifying charger values...");
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+    */
+    function SubmitButtonPressed() {
+        try {
+            var modifyValues = [
+                {
+                    "DSID": "172",
+                    "Value": TextToBytes(VerifyBatteryCapacityRange(document.getElementById("batteryCapacity_modify").value), "float32")
+                },
+                {
+                    "DSID": "174",
+                    "Value": TextToBytes(VerifyTargetVoltageRange(document.getElementById("batteryPackTargetVoltage_modify").value), "float32")
+                },
+                {
+                    "DSID": "297",
+                    "Value": TextToBytes(document.getElementById("maxCurrent_modify").value, "float32")
+                },
+                {
+                    "DSID": "309",
+                    "Value": TextToBytes(document.getElementById("maxVoltage_modify").value, "float32")
+                },
+                {
+                    "DSID": "86",
+                    "Value": GetAcCycleStopTimeField()["suspendDisable"]
+                },
+                {
+                    "DSID": "77",
+                    "Value": GetAcCycleStopTimeField()["suspendTime"]
+                },
+                {
+                    "DSID": "350",
+                    "Value": GetShutdownField()["shutdownTime"]
+                },
+                {
+                    "DSID": "75",
+                    "Value": GetShutdownField()["shutdownTimeoutHrs"]
+                },
+                {
+                    "DSID": "234",
+                    "Value": GetShutdownField()["shutdownDisable"]
+                },
+                {
+                    "DSID": "4",
+                    "Value": TextToBytes(VerifyRange(document.getElementById("cableResistance_modify").value, 0, 150), "float32")
+                }
+            ]
+        } catch (errorMsg) {
+            alert(errorMsg)
+            return;
+        }
+
+        for (var i = 0; i < modifyValues.length; i++) {
+            if (chargerList[selectedChargerIndex] == undefined) {
+                alert("No charger selected!");
+                return;
+            }
+
+            var dsID = modifyValues[i]["DSID"];
+            var bytes = modifyValues[i]["Value"];
+            if (bytes != "" && bytes != undefined) {
+                ModifyDsId(dsID, bytes);
+            }
+        }
+        ResetCharger();
+        Initialize();
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+    */
+    function ModifyButtonPressed() {
+
+        document.getElementById("modifyButton").style.display = "none";
+        document.getElementById("submitAndCancelButton").style.visibility = "visible";
+
+        for (var i = 0; i < tagValues.length; i++) {
+
+            var elementModifiable = true;
+
+            var element = document.getElementById(tagValues[i]["Tag"]);
+            var modifyElement = document.getElementById(element.id + "_modify");
+
+            if (modifyElement == undefined) {
+                elementModifiable = false;
+            }
+            //Fields: acCycleStopTime & shutdownTime should only be modifiable on IC series chargers
+            else if (modifyElement.id == "acCycleStopTime_modify" || modifyElement.id == "shutdownTime_modify") {
+
+                var versionResult = CallAndInterpret("1");
+                if (versionResult["isError"] != 0 ||
+                    versionResult["value"].indexOf("IC") == -1 ||
+                    versionResult["value"].indexOf("ICL") != -1) {
+
+                    elementModifiable = false;
+                }
+            }
+
+            if (elementModifiable == true) {
+                element.style.display = "none";
+                modifyElement.style.display = "";
+                modifyElement.value = "";
+                modifyElement.setAttribute("placeholder", element.innerHTML);
+            } else {
+                element.style.color = "grey";
+            }
+        }
+    }
+
+    /*
+     *  Added for SSP-9637: Write/Read select charger configuration settings
+    */
+    function CancelModifyMode() {
+        document.getElementById("modifyButton").style.display = "";
+        document.getElementById("submitAndCancelButton").style.visibility = "hidden";
+
+        for (var i = 0; i < tagValues.length; i++) {
+            var element = document.getElementById(tagValues[i]["Tag"]);
+            var modifyElement = document.getElementById(tagValues[i]["Tag"] + "_modify");
+
+            element.style.display = "";
+            element.style.color = "black";
+
+            if (modifyElement != undefined) {
+                modifyElement.style.display = "none";
+            }
+        }
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+    /*
+     * Added for SSP-9647: Add range check when modifying target voltage and battery capacity
+     * This function makes sure that when we modify the battery capacity, the input number is in 
+     * valid range.  
+    */
+    function VerifyBatteryCapacityRange(int) {
+        if (int == "" || int == undefined)
+            return undefined;
+
+        var dqtModel = CallAndInterpret("1");
+
+        if (dqtModel["isError"] == 0) {
+            var split = dqtModel["value"].split('-');
+            if (split.length < 3) {
+                throw "Invalid DQTMODELNUMBER (dsId: 1) found in charger, could not verify battery capacity range.";
+            }
+        } else {
+            throw "Error trying to modify battery capacity: " + dqtModel["value"];
+        }
+
+        var serialNum = split[0];
+        var modelNum = split[1];
+        var jsonIdentifier = serialNum + "-" + modelNum; //Value to find in ChargersData.txt
+
+        var shell = new ActiveXObject("Scripting.FileSystemObject");
+        var batteryCapRangeFile = shell.OpenTextFile('V:\\Software\\Releases\\IC CAN Reprogramming\\WIP\\Mode 5\\Support\\ChargersData.txt');
+
+        var json = JSON.parse(batteryCapRangeFile.ReadAll());
+
+        if (json[jsonIdentifier] == undefined) {
+            throw "Unrecognized charger model, unable to modify battery capacity. Please seek support from Delta-Q.";
+        }
+
+        var minBatteryCap = json[jsonIdentifier]["minBatteryCap"];
+        var maxBatteryCap = json[jsonIdentifier]["maxBatteryCap"];
+
+        if (parseInt(int) >= minBatteryCap && parseInt(int) <= maxBatteryCap) {
+            return int;
+        }
+        else {
+            throw "Battery capacity out of range! Valid range: " + json[jsonIdentifier]["minBatteryCap"] + "-" + json[jsonIdentifier]["maxBatteryCap"];
+        }
+    }
+
+    /*
+     * Added for SSP-9647: Add range check when modifying target voltage and battery capacity
+     * 
+     * This function makes sure that when we modify the target voltage, the input number is in 
+     * valid range.  
+    */
+    function VerifyTargetVoltageRange(int) {
+        if (int == "" || int == undefined)
+            return undefined;
+
+        var dqtModel = CallAndInterpret("1");
+
+        if (dqtModel["isError"] == 0) {
+            var split = dqtModel["value"].split('-');
+            if (split.length < 3) {
+                throw "Invalid DQTMODELNUMBER (dsId: 1) found in charger, could not verify target voltage range.";
+            }
+        } else {
+            throw "Error trying to modify target voltage: " + dqtModel["value"];
+        }
+
+        var serialNum = split[0];
+        var modelNum = split[1];
+        var jsonIdentifier = serialNum + "-" + modelNum; //Value to find in ChargersData.txt
+
+        var shell = new ActiveXObject("Scripting.FileSystemObject");
+        var batteryCapRangeFile = shell.OpenTextFile('V:\\Software\\Releases\\IC CAN Reprogramming\\WIP\\Mode 5\\Support\\ChargersData.txt');
+
+        var json = JSON.parse(batteryCapRangeFile.ReadAll());
+
+        if (json[jsonIdentifier] == undefined) {
+            throw "Unrecognized charger model, unable to modify target voltage. Please seek support from Delta-Q.";
+        }
+
+        var minVoltage = json[jsonIdentifier]["minVoltage"];
+        var maxVoltage = json[jsonIdentifier]["maxVoltage"];
+
+        if (parseInt(int) >= minVoltage && parseInt(int) <= maxVoltage) {
+            return int;
+        }
+        else {
+            throw "Target voltage out of range! Valid range: " + json[jsonIdentifier]["minVoltage"] + "-" + json[jsonIdentifier]["maxVoltage"];
+        }
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+    //Source: https://www.cirris.com/learning-center/calculators/133-wire-resistance-calculator-table
+    // Resistance is in ohms per 100 feet
+    // for 0 to 40 gauge wire
+    var WireResistance = new Array(41);
+
+    /*
+     * Added for SSP-9648
+    */
+    WireResistance[0] = 0.009827;
+    WireResistance[1] = 0.01239;
+    WireResistance[2] = 0.01563;
+    WireResistance[3] = 0.01970;
+    WireResistance[4] = 0.02485;
+    WireResistance[5] = 0.03133;
+    WireResistance[6] = 0.03951;
+    WireResistance[7] = 0.04982;
+    WireResistance[8] = 0.06282;
+    WireResistance[9] = 0.07921;
+    WireResistance[10] = 0.09989;
+    WireResistance[11] = 0.1260;
+    WireResistance[12] = 0.1588;
+    WireResistance[13] = 0.2003;
+    WireResistance[14] = 0.2525;
+    WireResistance[15] = 0.3184;
+    WireResistance[16] = 0.4016;
+    WireResistance[17] = 0.5064;
+    WireResistance[18] = 0.6385;
+    WireResistance[19] = 0.8051;
+    WireResistance[20] = 1.015;
+    WireResistance[21] = 1.280;
+    WireResistance[22] = 1.614;
+    WireResistance[23] = 2.036;
+    WireResistance[24] = 2.567;
+    WireResistance[25] = 3.237;
+    WireResistance[26] = 4.081;
+    WireResistance[27] = 5.147;
+    WireResistance[28] = 6.490;
+    WireResistance[29] = 8.183;
+    WireResistance[30] = 10.32;
+    WireResistance[31] = 13.01;
+    WireResistance[32] = 16.41;
+    WireResistance[33] = 20.69;
+    WireResistance[34] = 26.09;
+    WireResistance[35] = 32.90;
+    WireResistance[36] = 41.48;
+    WireResistance[37] = 52.31;
+    WireResistance[38] = 65.96;
+    WireResistance[39] = 83.18;
+    WireResistance[40] = 104.90;
+
+    /*
+     * Added for SSP-9648: Charger summary, Add ability to set Cable resistance correction
+    */
+    function ComputeWireResistance(WireGauge, WireLength, Units) {
+        var res;
+
+        WireLength = WireLength * 2; // We need to double length to account for return path
+
+        res = -1.0;
+        if ((WireGauge <= 40) && (WireGauge >= 0) && (WireLength >= 0)) {
+            if (Units == 'Feet') {
+                // ohms per foot
+                res = WireLength * WireResistance[WireGauge] / 100.0;
+            }
+            else if (Units == 'Inches') {
+                // ohms per inch
+                res = ((WireLength / 12.0) * WireResistance[WireGauge]) / 100.0;
+            }
+            else {
+                // ohms per meter
+                res = WireLength * WireResistance[WireGauge] / 30.48;
+            }
+            res = Math.round(res * 1000);
+        }
+        return res;
+    }
+
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+    //**************************************************************************************************************************************************************
+
+</script>
+</head>
+
+<body id="html body">
+<style>
+    table {
+        margin-bottom: 0.5cm;
+        border-collapse: collapse;
+    }
+
+    tr, b, text {
+        font-size: 12px;
+        font-family: Arial;
+        color: black;
+    }
+
+    td {
+        height: 20px;
+        overflow: hidden;
+        padding: 3px 15px;
+    }
+
+    input {
+        vertical-align: middle;
+        height: 12px;
+        width: 60px;
+        font-size: 9px;
+    }
+    select {
+        vertical-align: middle;
+        height: 18px;
+        width: 70px;
+        font-size: 9px;
+    }
+
+    button {
+        outline: none;
+        border: none;
+        vertical-align: middle;
+        font-size: 11px;
+        padding: 5px 5px;
+        margin-right: 5px;
+        background-color: #dcf2f2;
+    }
+
+    span {
+        vertical-align: middle;
+        text-align: center;
+    }
+
+    .modifyButtons button {
+        float: left;
+    }
+
+    button:hover {
+        background-color: #ddd;
+    }
+
+    .tab button.active {
+        background-color: #dcf2f2;
+    }
+
+    .panel {
+        overflow: auto;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+        position: absolute;
+        z-index: 1;
+    }
+
+    .panel.addChargerPanel {
+        width: 200px;
+        height: 30px;
+        left: 10px;
+        top: 10px;
+    }
+
+    .panel.calculateResistancePanel {
+        width: 150px;
+        height: 100px;
+        left: 280px;
+        top: 420px;
+    }
+
+    .panel input {
+        margin-left: 5px;
+        margin-top: 5px
+    }
+    .panel button {
+        margin-top: 5px;
+        height: 18px;
+        margin-left: 5px;
+    }
+    .panel p {
+        margin-left: 5px;
+    }
+
+    .tab button {
+        margin-bottom: 0.1cm;
+    }
+
+    .overlay {
+        left: 0px;
+        top: 0px;
+        position: fixed;
+        z-index: 1;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background-color: rgb(0,0,0);
+        background-color: rgba(0,0,0,0.4);
+    }
+
+    .overlay p {
+        color: white;
+        font-size: 30px;
+        font-family: Arial;
+        vertical-align: middle;
+        text-align: center;
+    }
+</style>
+
+<div>
+    <table width="400" id="ChargersOptions">
+        <tr>
+            <td>
+                <button style="float:right" id="RefreshButton" onClick="Initialize()">Refresh</button>
+                <div>
+                    <button id="DetectChargersButton" onClick="DetectConfiguration()">Detect Chargers</button>
+                    <button id="AddChargersButton" onClick='document.getElementById("AddChargerPanel").style.visibility="visible";'>Add Charger</button>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <table>
+        <tr>
+            <td>
+                <div class="tab" id="ChargerSelectionTabs">
+                    <!-- Tab selections will be added here -->
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+<hr>
+<div>
+    <table width="450">
+        <tr>
+            <td width="50%"><b>Charger Info</b></td>
+            <td class="modifyButtons">
+                <button id="modifyButton" onclick="ModifyButtonPressed()">Modify</button>
+                <div id="submitAndCancelButton"><button onclick="SubmitButtonPressed()">Submit</button><button onclick="CancelModifyMode()">Cancel</button></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Charger serial number">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Serial number
+            </td>
+            <td id="serialNumber"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Charger model">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Charger model
+            </td>
+            <td id="chargerModel"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Delta-Q FGA">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Delta-Q FGA
+            </td>
+            <td id="deltaQFGA"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="The hardware part number is a string of characters (like Delta-Q’s serial, FGA or configuration numbers) that identifies the charger according to customer standards. The contents may be read via CANopen. It is not intended for writing post-production.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Customer HW part number
+            </td>
+            <td id="customerHWPartNumber"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="The software part number is a string of characters (like Delta-Q’s serial, FGA or configuration numbers) that identifies the charger according to customer standards. The contents may be read via CANopen. It is not intended for writing post-production.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Customer SW part number
+            </td>
+            <td id="customerSWPartNumber"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="The assembly part number is a string of characters (like Delta-Q’s serial, FGA or configuration numbers) that identifies the charger according to customer standards. The contents may be read via CANopen. It is not intended for writing post-production.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Customer assembly part number
+            </td>
+            <td id="customerAssemblyPartNumber"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="The model number is a string of characters (like Delta-Q’s serial, FGA or configuration numbers) that identifies the charger according to customer standards. The contents may be read via CANopen. It is not intended for writing post-production.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Customer model name
+            </td>
+            <td id="customerModelName"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="The serial number is a string of characters (like Delta-Q’s serial, FGA or configuration numbers) that identifies the charger according to customer standards. The contents may be read via CANopen. It is not intended for writing post-production.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Customer serial number
+            </td>
+            <td id="customerSerialNumber"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Charger software version and variant">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  SW version and variant
+            </td>
+            <td id="swVersionAndVariant"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Active algo">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Active algo
+            </td>
+            <td id="activeAlgo"></td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Defines the capacity of the connected battery pack in Ampere-hours. This value overrides a value in the algorithm, if any.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Battery Pack capacity (Ah)
+            </td>
+            <td>
+                <text id="batteryCapacity"></text>
+                <input id="batteryCapacity_modify" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Defines the voltage that the charger should use to scale the algorithm in Volts.  This value overrides the nominal 2Vpc scaling that the charger uses. New table entries can be created in the CIL. Valid target voltage values are 50% or more of the nominal charger voltage.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Battery pack target voltage (V)
+            </td>
+            <td>
+                <text id="batteryPackTargetVoltage"></text>
+                <input id="batteryPackTargetVoltage_modify" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Defines the maximum current that the charger should deliver in Amperes.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Max current (A)
+            </td>
+            <td>
+                <text id="maxCurrent"></text>
+                <input id="maxCurrent_modify" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Defines the maximum voltage that the charger can achieve. For example, if an algo request 33.6V (2.8Vpc of a 24V charger), but the Maximum Votlage Limit is set to  29V, then charger can only supply 29V.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Max voltage (V)
+            </td>
+            <td>
+                <text id="maxVoltage"></text>
+                <input id="maxVoltage_modify" type="text">
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span title="This parameter defines the time before the charger shuts down after AC is removed while it is connected to a battery.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Charger shutdown time (ms)
+            </td>
+            <td>
+                <text id="shutdownTime"></text>
+                <input id="shutdownTime_modify" type="text" list="shutdownTimeList">
+                <datalist id="shutdownTimeList">
+                    <option value="Never">
+                </datalist>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Sets the maximum time that the charger remains in a ‘suspended’ state after losing AC during a charge cycle. If this period expires before AC returns, then the charge cycle ends and the next charge will be part of a new charge cycle. If AC returns while the charger is in the suspended state, the same charge cycle will resume.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span> AC Suspend time
+            </td>
+            <td>
+                <text id="acCycleStopTime"></text>
+                <select id="acCycleStopTime_modify">
+                    <option value="Instant">Instant</option>
+                    <option value="1000">1 Second</option>
+                    <option value="600000">10 Minutes</option>
+                    <option value="Never">Never</option>
+                </select>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                <span title="Provides the charger with an estimate of the battery cable resistance, which allows it to adjust its output such that the voltage at the battery is as expected.">
+                    <img src="info-24px.svg" height="15" width="15" />
+                </span>  Cable resistance (mΩ)
+            </td>
+            <td>
+                <text id="cableResistance"></text>
+                <input id="cableResistance_modify" onclick='document.getElementById("calculateResistancePanel").style.visibility = "visible";
+                                                                document.getElementById("calculateResistancePanel").setAttribute("resultLocationId", "cableResistance_modify")'>
+            </td>
+        </tr>
+    </table>
+</div>
+<hr>
+<div>
+    <table width="450">
+        <tr>
+            <td><b>Cumulative counters</b></td>
+            <td><b>Charger</b></td>
+            <td><b>Battery</b></td>
+        </tr>
+        <tr>
+            <td>Total charges</td>
+            <td id="totalCharges_charger"></td>
+            <td id="totalCharges_battery"></td>
+        </tr>
+        <tr>
+            <td>Completed charges</td>
+            <td id="completedCharges_charger"></td>
+            <td id="completedCharges_battery"></td>
+        </tr>
+        <tr>
+            <td>Opportunistic charges</td>
+            <td id="opportunisticCharges_charger"></td>
+            <td id="opportunisticCharges_battery"></td>
+        </tr>
+        <tr>
+            <td>Equalisation charges</td>
+            <td id="equalisationCharges_charger"></td>
+            <td id="equalisationCharges_battery"></td>
+        </tr>
+        <tr>
+            <td>AC interrupted charges</td>
+            <td id="acInterruptedCharges_charger"></td>
+            <td id="acInterruptedCharges_battery"></td>
+        </tr>
+        <tr>
+            <td>DC interrupted charges</td>
+            <td id="dcInterruptedCharges_charger"></td>
+            <td id="dcInterruptedCharges_battery"></td>
+        </tr>
+        <tr>
+            <td>Maintenance charges</td>
+            <td id="maintenanceCharges_charger"></td>
+            <td id="maintenanceCharges_battery"></td>
+        </tr>
+        <tr>
+            <td>Equivalent full charges</td>
+            <td id="equivalentFullCharges_charger"></td>
+            <td id="equivalentFullCharges_battery"></td>
+        </tr>
+    </table>
+
+    <table width="400">
+        <tr>
+            <td style= "font-size: 9px">
+                **Battery data will be left blank if software version does not support battery information.
+                **In software version 9.5 and above, chargers can store information for a battery that can get reset when battery changes.
+            </td>
+        </tr>
+    </table>
+</div>
+<hr>
+<div width="300">
+    <div id="#AvailableChargingProfiles_section">
+        <table id="#AvailableChargingProfiles_table">
+            <!-- Table rows will be added here from javascript code-->
+        </table>
+    </div>
+</div>
+
+<div id="AddChargerPanel" class="panel addChargerPanel">
+    <input type="text" id="AddNodeId" placeholder="nodeId">
+    <input type="text" id="AddBaudRate" placeholder ="Baud Rate">
+    <button onclick='AddCharger(document.getElementById("AddNodeId").value, document.getElementById("AddBaudRate").value)'>Add</button>
+</div>
+
+<div id="calculateResistancePanel" class="panel calculateResistancePanel">
+    <text style= "font-size: 9px">Wire length (ft)<input type="text" id="wireLength"></text>
+    <text style= "font-size: 9px">Wire gauge<input type="text" id="gauge"></text>
+    <button onclick='HideAllPanels(); document.getElementById("cableResistance_modify").value = ComputeWireResistance(document.getElementById("gauge").value, document.getElementById("wireLength").value, "Feet")'>Calculate</button>
+</div>
+
+<div id="Overlay" class="overlay">
+    <p id="OverlayText"></p>
+</div>
+
+<script>Initialize()</script>
+
+</body>
+</html>

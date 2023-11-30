@@ -1,0 +1,242 @@
+table {
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+table input, button, span {
+    display: inline-block
+}
+
+tr, b, text {
+    font-size: 11px;
+    font-family: Arial;
+}
+
+td {
+    height: 20px;
+    overflow: hidden;
+    padding: 2px 15px;
+}
+
+button {
+    background-color: #daecf0;
+}
+
+red {
+    color: #eb4034;
+}
+
+input, select {
+    background-color: #ebf2f5;
+}
+
+button, select, input {
+    outline: none;
+    border: 1px solid #8dacb3;
+    vertical-align: middle;
+    font-size: 11px;
+    padding: 5px 5px;
+    margin-right: 2px;
+    border-radius: 3px;
+}
+
+.black {
+    color: #000000;
+}
+
+.custom-input {
+    width: 105px;
+}
+
+.dropdown-input {
+    width: 120px;
+}
+
+.fileLocation-input {
+    width: 150px;
+}
+
+span {
+    vertical-align: middle;
+    text-align: center;
+}
+
+.modifyButtons button {
+    float: left;
+}
+
+button:hover {
+    background-color: #b2ced4;
+}
+
+button.active {
+    background-color: #b2ced4;
+}
+
+.tab button {
+    margin-bottom: 0.1cm;
+}
+
+.overlay {
+    left: 0px;
+    top: 0px;
+    position: fixed;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: rgb(0,0,0);
+    background-color: rgba(0,0,0,0.4);
+}
+
+.overlay p {
+	color: white;
+	font-size: 30px;
+	font-family: Arial;
+	vertical-align: middle;
+	text-align: center;
+}
+
+.subText {
+	font-size: 9px;
+}
+
+.RefreshButton {
+	float:right;
+}
+
+.AuthenticateButton {
+    float: right;
+}
+
+.center {
+    margin: auto;
+    text-align: center;
+    align-items: center;
+}
+
+progress {
+    vertical-align: middle;
+    color: #a6e0ed;
+    border: 1px solid #8dacb3;
+    height: 18px;
+    display: inline-block;
+    width: 100%;
+}
+
+.inline {
+    display: inline-block;
+}
+
+.floatRight {
+    float: right;
+}
+
+.logBox {
+    background-color: #dff0f2;
+    height: 400px;
+    overflow: scroll;
+    border: 1px solid #8dacb3;
+    border-radius: 3px;
+    margin: auto;
+    padding: 3px 3px;
+    text-align:left;
+}
+
+.chargerSelectionList button {
+    float: left;
+}
+
+.chargerListText {
+    color: #5bbd74;
+}
+
+.toolTip img {
+    height: 15px;
+    width: 15px;
+}
+
+.icon img {
+    height: 15px;
+    width: 15px;
+}
+
+.indicator img {
+    height: 20px;
+    width: 20px;
+}
+
+.hidden {
+    display: none;
+}
+
+.greyLine {
+    border: 1px solid #dbdbdb;
+}
+
+.thinLine {
+    border: 0.5px solid #dbdbdb;
+    margin: 2px;
+    padding: 0px;
+}
+
+.AvailableChargingProfiles_table table {
+    width: 300px;
+}
+
+.summaryPart1 table {
+    width: 500px;
+}
+
+.summaryPart2 table {
+    width: 400px;
+}
+
+.summaryCumulativeCounters table {
+    width: 300px;
+}
+.summaryCumulativeCountersCol1 {
+    width: 60%;
+}
+.summaryCumulativeCountersCol2 {
+    width: 20%;
+}
+.summaryCumulativeCountersCol3 {
+    width: 20%;
+}
+
+.programmingSectionTable table {
+    width: 560px;
+}
+
+.logTable {
+    width: 100%;
+}
+
+/* Style the button that is used to open and close the collapsible content */
+.collapsibleButton {
+    padding: 0px;
+    cursor: pointer;
+    width: 80%;
+    text-align: left;
+    outline: none;
+    border: none;
+    background-color: white;
+}
+
+.collapsibleContent {
+    background-color: #f0f0f0;
+}
+.hide {
+    display: none;
+}
+
+.highlight {
+    font-weight: bold;
+    color: #314861;
+}
+
+.tabsSection {
+    display: inline;
+}

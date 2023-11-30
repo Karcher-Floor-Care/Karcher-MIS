@@ -1,0 +1,86 @@
+{
+	"IC0650-024": {
+		"maxVoltage": 36,
+		"minVoltage": 9,
+		"minBatteryCap": 100,
+		"maxBatteryCap": 400
+	},
+	"IC0650-036": {
+		"maxVoltage": 54,
+		"minVoltage": 13.5,
+		"minBatteryCap": 70,
+		"maxBatteryCap": 400
+	},
+	"IC0650-048": {
+		"maxVoltage": 72,
+		"minVoltage": 18,
+		"minBatteryCap": 50,
+		"maxBatteryCap": 400
+	},
+	"IC0900-024": {
+		"maxVoltage": 36,
+		"minVoltage": 9,
+		"minBatteryCap": 100,
+		"maxBatteryCap": 400
+	},
+	"IC0900-036": {
+		"maxVoltage": 54,
+		"minVoltage": 13.5,
+		"minBatteryCap": 70,
+		"maxBatteryCap": 400
+	},
+	"IC0900-048": {
+		"maxVoltage": 72,
+		"minVoltage": 18,
+		"minBatteryCap": 50,
+		"maxBatteryCap": 400
+	},	
+	"IC1200-024": {
+		"maxVoltage": 36,
+		"minVoltage": 9,
+		"minBatteryCap": 100,
+		"maxBatteryCap": 400
+	},
+	"IC1200-036": {
+		"maxVoltage": 54,
+		"minVoltage": 13.5,
+		"minBatteryCap": 70,
+		"maxBatteryCap": 400
+	},
+	"IC1200-048": {
+		"maxVoltage": 72,
+		"minVoltage": 18,
+		"minBatteryCap": 50,
+		"maxBatteryCap": 400
+	},
+	"RC0900-U36": {
+		"maxVoltage": 57,
+		"minVoltage": 14,
+		"minBatteryCap": 70,
+		"maxBatteryCap": 400
+	},
+	"RC0900-U48": {
+		"maxVoltage": 72,
+		"minVoltage": 14,
+		"minBatteryCap": 50,
+		"maxBatteryCap": 400
+	},
+	"RC1000-U24": {
+		"maxVoltage": 36,
+		"minVoltage": 9,
+		"minBatteryCap": 100,
+		"maxBatteryCap": 400
+	},
+	"RC1200-U36": {
+		"maxVoltage": 57,
+		"minVoltage": 14,
+		"minBatteryCap": 70,
+		"maxBatteryCap": 400
+	},
+	"RC1200-U48": {
+		"maxVoltage": 72,
+		"minVoltage": 14,
+		"minBatteryCap": 50,
+		"maxBatteryCap": 400
+	}
+}

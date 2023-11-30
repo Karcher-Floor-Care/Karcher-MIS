@@ -1,0 +1,101 @@
+﻿<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta charset="utf-8" />
+    <link href="Style.css" rel="stylesheet" type="text/css" />
+
+    <script src="RunCO_PCAN_DEMO.js"></script>
+    <script src="DetectChargers.js"></script>
+    <script src="Interpret.js"></script>
+    <script src="FillSummaryLayout.js"></script>
+</head>
+
+
+<body>
+    <div class="config">
+
+        <table>
+            <tr>
+                <b>Scan configuration</b>
+            </tr>
+        </table>
+        <hr class="greyLine" />
+        <table>
+            <tr>
+                <td>Channel:</td>
+                <td>
+                    <select class="custom-input" id="channel">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                    </select>
+                </td>
+            </tr>
+            <tr>
+                <td>Baud Rates:</td>
+                <td></td>
+            </tr>
+            <tr>
+                <td colspan="2">
+                    <table>
+                        <tr>
+                            <td><input class="baudRateCheckBox" type="checkbox" id="br10" value="10"/><label for="br10">10 kb/s</label></td>                            
+                            <td><input type="checkbox" id="br50" value="50"/><label for="br50">50 kb/s</label></td>
+                            <td><input type="checkbox" id="br125" value="125" checked/><label for="br125">125 kb/s</label></td>
+                        </tr>
+                        <tr>
+                            <td><input type="checkbox" id="br250" value="250" checked/><label for="br250">250 kb/s</label></td>
+                            <td><input type="checkbox" id="br500" value="500" checked/><label for="br500">500 kb/s</label></td>
+                            <td><input type="checkbox" id="br800" value="800"/><label for="br800">800 kb/s</label></td>
+                            <td><input type="checkbox" id="br1000" value="1000" checked/><label for="br1000">1000 kb/s</label></td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr>
+                <td>EDS source file:</td>
+                <td>
+                    <input accept=".eds" onchange='document.getElementById("edsFileLocation").value = this.value; GetCobsIdFromEds();' type="file" id="edsFileSelect" class="hidden" />
+                    <button onclick='document.getElementById("edsFileSelect").click()'>Choose file</button>
+                    <input class="fileLocation-input" id="edsFileLocation" type="text" />
+                </td>
+                <td>
+                    <span class="indicator" id="edsFileIndicatorMessage">
+                        <img id="edsFileIndicator" class="center" />
+                    </span>
+                </td>
+            </tr>
+            <tr>
+                <td>Programmer COBID:</td>
+                <td>0x <input class="custom-input" id="programmerCobId" type="text" value="580" /></td>
+            </tr>
+            <tr class="custom-input">
+                <td>Device COBID:</td>
+                <td>0x <input class="custom-input" id="chargerCobId" type="text" value="600" /></td>
+            </tr>
+            <tr>
+                <td>
+                    <button id="DetectChargersButton" onClick="RefreshDeviceList();">Detect Node IDs</button>
+                </td>
+                  <td>
+                    <button id="SpecifyNodeIDBtn" onClick="SpecifyNodeIdTab();">Specify Node ID</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <br /><br />
+    <b>Detected devices:</b>
+    <hr class="greyLine" />
+    <table>
+        <tr>
+            <td>
+                <div class="tab" id="ChargerSelectionList">
+                    <!-- Devices selections will be added here -->
+                </div>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

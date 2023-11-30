@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*******************************************************************************
+ \file $File$
+ \brief This file provides the formats for values written to the data logger 
+ binary stream
+ \version $Revision$
+ \author  $Author$
+ \date  $Date$
+
+ \details This file, in combination with DataFields.xml and and DataRecords.xml, 
+     forms the metadata used by both the embedded code generation and the PC tool 
+     to fully describe the binary stream layout.
+     It contains information about the binary representation used to encode values.
+     The embedded code now has the freedom to write values out directly without
+     expensive and/or lossy conversion to default C representations. The PC tool
+     can use this information to correctly interpret the values from a variety of
+     different products without the need for hardcoding conversions and product/
+     version tracking.
+
+\warning   
+     
+ \verbatim
+ CHANGE HISTORY: 
+ $Log$
+ csinger - Wednesday, November 07, 2012 11:14:39 AM
+ * Promoting SSP-1272 for HOTFIX to work.
+ dgong - Tuesday, October 30, 2012 10:26:02 AM
+ * SSP-1272 Added cum counters.
+ dgong - Monday, October 29, 2012 9:39:00 AM
+ * SSP-1272: Adding more fields.
+ dgong - Monday, October 22, 2012 5:22:02 PM
+ * SSP-1272: data format update.
+ dgong - Tuesday, August 28, 2012 2:35:46 PM
+ * SSP-751 Added more fields to data logging
+ * merged some conflit from rebase.
+ dgong - Tuesday, August 28, 2012 1:57:44 PM
+ * adding more record and fields.
+ dgong - Friday, June 29, 2012 7:37:28 PM
+ to add in uint16_t related Qs
+ dhepler - Wednesday, June 20, 2012 2:04:00 PM
+ * Added some types from typedefs.h, qnotation.h, and some bitmaps.
+ jlotz - Monday, June 18, 2012 1:20:29 PM
+ * Completed implementation for data logging functionality
+   dgong/Peter B. - Monday, June 29, 2012 1:20:29 PM
+ * Added UINT16_QX formats.
+ \endverbatim
+*******************************************************************************/
+-->
+
+<DataFormats>
+  <!-- Typedefs -->
+  <DataFormat id="FLOAT32"><NumBytes>4</NumBytes><Type>float</Type>                        </DataFormat>
+  <DataFormat id="INT8">   <NumBytes>1</NumBytes><Type>integer</Type><Signed>true</Signed> </DataFormat>
+  <DataFormat id="INT16">  <NumBytes>2</NumBytes><Type>integer</Type><Signed>true</Signed> </DataFormat>
+  <DataFormat id="INT32">  <NumBytes>4</NumBytes><Type>integer</Type><Signed>true</Signed> </DataFormat>
+  <DataFormat id="UINT8">  <NumBytes>1</NumBytes><Type>integer</Type><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16"> <NumBytes>2</NumBytes><Type>integer</Type><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT32"> <NumBytes>4</NumBytes><Type>integer</Type><Signed>false</Signed></DataFormat>
+  <DataFormat id="SERIAL_16B"> <NumBytes>16</NumBytes><Type>char*</Type><Signed>false</Signed></DataFormat>
+  
+  <!-- Q-notation -->
+  
+  <DataFormat id="INT32_Q10"> <NumBytes>4</NumBytes><Type>Q</Type><Precision>10</Precision> <Signed>true</Signed></DataFormat> 
+    
+  <DataFormat id="INT16_Q14"><NumBytes>2</NumBytes><Type>Q</Type><Precision>14</Precision><Signed>true</Signed></DataFormat>
+  <DataFormat id="INT16_Q13"><NumBytes>2</NumBytes><Type>Q</Type><Precision>13</Precision><Signed>true</Signed></DataFormat>
+  <DataFormat id="INT16_Q12"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>12</Precision> <Signed>true</Signed></DataFormat>    
+  <DataFormat id="INT16_Q10"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>10</Precision> <Signed>true</Signed></DataFormat>  
+  <DataFormat id="INT16_Q9"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>9</Precision> <Signed>true</Signed></DataFormat>   
+  <DataFormat id="INT16_Q8"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>8</Precision> <Signed>true</Signed></DataFormat>
+  <DataFormat id="INT16_Q7"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>7</Precision> <Signed>true</Signed></DataFormat>
+  <DataFormat id="INT16_Q4"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>4</Precision> <Signed>true</Signed></DataFormat>
+  <DataFormat id="INT16_Q2"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>2</Precision> <Signed>true</Signed></DataFormat>
+  
+  <DataFormat id="INT32_Q24"> <NumBytes>4</NumBytes><Type>Q</Type><Precision>24</Precision> <Signed>true</Signed></DataFormat>
+    
+  <DataFormat id="UINT16_Q14"><NumBytes>2</NumBytes><Type>Q</Type><Precision>14</Precision><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_Q13"><NumBytes>2</NumBytes><Type>Q</Type><Precision>13</Precision><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_Q12"><NumBytes>2</NumBytes><Type>Q</Type><Precision>12</Precision><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_Q10"><NumBytes>2</NumBytes><Type>Q</Type><Precision>10</Precision><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_Q8"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>8</Precision> <Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_Q4"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>4</Precision> <Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_Q3"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>3</Precision> <Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_Q2"> <NumBytes>2</NumBytes><Type>Q</Type><Precision>2</Precision> <Signed>false</Signed></DataFormat>
+
+  <DataFormat id="UINT32_Q20"><NumBytes>4</NumBytes><Type>Q</Type><Precision>20</Precision><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT32_Q12"><NumBytes>4</NumBytes><Type>Q</Type><Precision>12</Precision><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT32_Q10"><NumBytes>4</NumBytes><Type>Q</Type><Precision>10</Precision><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT32_Q8"> <NumBytes>4</NumBytes><Type>Q</Type><Precision>8</Precision> <Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT32_Q4"> <NumBytes>4</NumBytes><Type>Q</Type><Precision>4</Precision> <Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT32_Q2"> <NumBytes>4</NumBytes><Type>Q</Type><Precision>2</Precision> <Signed>false</Signed></DataFormat>
+  
+  <!-- Bitmaps -->
+  <DataFormat id="UINT8_BITMAP"> <NumBytes>1</NumBytes><Type>bitmap</Type><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT16_BITMAP"><NumBytes>2</NumBytes><Type>bitmap</Type><Signed>false</Signed></DataFormat>
+  <DataFormat id="UINT32_BITMAP"><NumBytes>4</NumBytes><Type>bitmap</Type><Signed>false</Signed></DataFormat>
+
+  <!-- The following fields are EXAMPLES. They will be replaced with the real fields once the logging system is up and running. -->
+  <DataFormat id="INT_Q25">
+    <NumBytes>4</NumBytes>
+	<Type>Q</Type>
+	<Precision>25</Precision>
+    <Signed>true</Signed>
+  </DataFormat>
+  <DataFormat id="INT_Q14">
+    <NumBytes>4</NumBytes>
+	<Type>Q</Type>
+	<Precision>14</Precision>
+    <Signed>true</Signed>
+  </DataFormat>
+  <DataFormat id="USHORT_Q7">
+    <NumBytes>2</NumBytes>
+    <Type>Q</Type>
+	<Precision>7</Precision>
+    <Signed>false</Signed>
+  </DataFormat>
+  <DataFormat id="USHORT_Q8">
+    <NumBytes>2</NumBytes>
+    <Type>Q</Type>
+	<Precision>8</Precision>
+    <Signed>false</Signed>
+  </DataFormat>  
+  <DataFormat id="SHORT_Q6">
+    <NumBytes>2</NumBytes>
+    <Type>Q</Type>
+	<Precision>6</Precision>
+    <Signed>true</Signed>
+  </DataFormat>
+  <DataFormat id="UINT_BITMAP">
+    <NumBytes>4</NumBytes>
+    <Type>bitmap</Type>
+    <Signed>false</Signed>
+  </DataFormat>
+  <DataFormat id="UCHAR_ENUM">
+    <NumBytes>1</NumBytes>
+    <Type>enum</Type>
+    <Signed>false</Signed>
+  </DataFormat>
+  <DataFormat id="U16_ENUM">
+    <NumBytes>2</NumBytes>
+    <Type>enum</Type>
+    <Signed>false</Signed>
+  </DataFormat>
+  <DataFormat id="FLOAT">
+    <NumBytes>4</NumBytes>
+    <Type>float</Type>
+    <Signed>false</Signed>
+  </DataFormat>
+  <DataFormat id="UBYTE">
+    <NumBytes>2</NumBytes>
+    <Type>integer</Type>
+    <Signed>false</Signed>
+  </DataFormat>
+</DataFormats>

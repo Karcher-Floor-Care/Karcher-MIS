@@ -1,0 +1,989 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+/*******************************************************************************
+ \brief This file provides the mapping of id numbers to records and their layout
+ binary stream
+
+ \details This file, in combination with DataFormats.xml and and DataFields.xml,
+     forms the metadata used by both the embedded code generation and the PC tool
+     to fully describe the binary stream layout.
+     It contains layout information about which values goes to which record and
+     in what order. It also maps the records to the 8-bit type ID used by the
+     PC tool to identify the contents of the records. Each product/variant
+     will have a specific version of this file to represent what their data logs
+     contain. The other two files are supersets of all fields and formats across
+     all products/variants.
+
+ \note
+    SSP-5464: When creating an end of charge cycle record, be sure to include a 
+    charge cycle count field so that the data analysis tool (IDAT) can properly 
+    group records from the same cycle.
+
+ \verbatim
+ \endverbatim
+*******************************************************************************/
+-->
+
+<DataRecords>
+  <!-- The following records are EXAMPLES. They will be replaced with the real records once the logging system is up and running. -->
+  <DataRecord id="DcVoltFiltered">
+    <TypeID>0</TypeID>
+    <FullName>DC Filtered Voltage</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="DCV"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="DcVoltCurrentFiltered">
+    <TypeID>1</TypeID>
+    <FullName>DC Filtered Voltage and Current</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="DCV"/>
+      <Field refID="DCA"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="TemperatureSensors">
+    <TypeID>2</TypeID>
+    <FullName>Temperature Sensors</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="INTemp"/>
+      <Field refID="BTemp"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="AlgorithmState">
+    <TypeID>3</TypeID>
+    <FullName>Current state of the Algorithm</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="AlgState"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Charge Module, see CHG_LOG_STATUS        -->
+  <DataRecord id="ChgAlgDisplayStatus">
+    <TypeID>4</TypeID>
+    <FullName>Charge Indication and Fault Status Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGAlgState"/>              <!-- Present State                -->
+      <Field refID="CHGEvent"/>                 <!-- Event causing status change  -->
+      <Field refID="CHGIndication"/>            <!-- Indication                   -->
+      <Field refID="CHGFaults"/>                <!-- Fault mask                   -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Charge Module, see CHG_LOG_EVENTS        -->
+  <DataRecord id="ChgAlgEventRecord">
+    <TypeID>5</TypeID>
+    <FullName>Charge Algorithm Event Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGAlgState"/>                  <!-- Present State       -->
+      <Field refID="CHGEvent"/>                     <!-- Event               -->
+      <Field refID="CHGCurrent"/>                   <!-- Filtered Current    -->
+      <Field refID="CHGVcorr"/>                     <!-- Corrected Voltage   -->
+      <Field refID="CHGVfilt"/>                     <!-- Filtered Voltage    -->
+      <Field refID="CHGBatTemp"/>                   <!-- Battery Temperature -->
+      <Field refID="CHGDvdt"/>                      <!-- dV/dt               -->
+      <Field refID="CHGDidt"/>                      <!-- dI/dt               -->
+      <Field refID="CHGAhCumul"/>                   <!-- Cumulative Ah       -->
+      <Field refID="CHGKWhCumul"/>                  <!-- Cumulative KWh      -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel> 
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Charge Cycle Record  -->
+  <DataRecord id="ChgCycleRecord" chargeCycleRecord="True">
+    <TypeID>6</TypeID>
+    <FullName>Charge Cycle Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGCycleCount"/>            <!--Charge Cycle Count-->
+      <Field refID="SoftVersionMajor"/>         <!--Software Version Major-->
+      <Field refID="SoftVersionMinor"/>         <!--Software Version Minor-->
+      <Field refID="SoftVersionBuild"/>         <!--Software Version Build-->
+      <Field refID="SoftVersionVariant"/>       <!--Software Version Variant-->
+      <Field refID="CHGAlgID"/>                 <!--Algorithm ID-->
+      <Field refID="CHGAlgVersonMajor"/>        <!--Algorithm major Version-->
+      <Field refID="CHGAlgVersonMinor"/>        <!--Algorithm minor Version-->
+      <Field refID="StatusIndicatorState"/>     <!--Status indication-->
+      <Field refID="DATLOGIndicationCumulative"/>  <!--Status indication bit mask-->
+      <Field refID="CHGFaults"/>                <!--Fault bit mask-->
+      <Field refID="DATLOGFaultsCumulative"/>   <!--Fault bit mask-->
+      <Field refID="DATLOGTerminationReason"/>  <!--Termination Reason-->
+      <Field refID="CHGBattVoltStart"/>         <!--Q8 Pack voltage-->
+      <Field refID="CHGBattVoltMax"/>           <!--max Voltage Q8 Pack Voltage-->
+      <Field refID="CHGChargeDuration"/>        <!--10 second resolution-->
+      <Field refID="CHGAmpHours"/>              <!--Q4 Cycle-->
+      <Field refID="CHGMcuTempMin"/>            <!--Signed Q2-->
+      <Field refID="CHGMcuTempMax"/>            <!--Signed Q2-->
+      <Field refID="CHGIntTemp1Min"/>           <!--Signed Q2-->
+      <Field refID="CHGIntTemp1Max"/>           <!--Signed Q2-->
+      <Field refID="CHGIntTemp2Min"/>           <!--Signed Q2-->
+      <Field refID="CHGIntTemp2Max"/>           <!--Signed Q2-->
+      <Field refID="CHGBattTempMin"/>           <!--Signed Q2-->
+      <Field refID="CHGBattTempMax"/>           <!--Signed Q2-->
+      <Field refID="ACVMin"/>                   <!--Q2 Cycle-->
+      <Field refID="ACVMax"/>                   <!--Q2 Cycle-->
+      <Field refID="ChargeCycleType"/>          <!-- Complete/Maintenance bit/ equalise bit/ -->
+      <Field refID="ACDerateElapsedTime"/>      <!--unSigned in Sec-->
+      <Field refID="TempDerateElapsedTime"/>    <!--unSigned in Sec-->
+      <Field refID="IndicatingGreater80PctEndBattCurrent"/>     <!-- Signed Q8-->
+      <Field refID="IndicatingGreater80PctEndBattTemp"/>        <!--Signed Q2-->
+      <Field refID="IndicatingGreater80PctElapsedTime"/>        <!--unSigned in Sec-->
+      <Field refID="EnergyReturnedWhenIndicatingGreater80Pct"/> <!--unSigned Q4 AH -->
+      <Field refID="IndicatingFinishElapsedTime"/>        <!--unSigned in Sec -->
+      <Field refID="EnergyReturnedInIndicatedFinish"/>    <!--unSigned Q4 AH -->
+      <Field refID="EndOfChargeACVoltage"/>               <!--unSigned Q2-->
+      <Field refID="EndOfChargeBattVoltage"/>             <!--unSigned Q8-->
+      <Field refID="EndOfChargeBattCurrent"/>             <!--Signed Q8-->
+      <Field refID="EndOfChargeBatteryTemp"/>             <!--Signed Q2-->
+      <Field refID="EnergyReturned"/>                     <!--unSigned in WH -->
+      <Field refID="ExternalAHReturnTarget"/>             <!--unSigned Q4 in AH -->
+      <Field refID="NumMaintenanceChargesInStorage"/>    <!--unSigned 8Q0  -->
+      <Field refID="CumChargerAHReturn"/>                 <!--float32_t AH -->
+      <Field refID="CumChargeElapsedTime"/>               <!--float32_t Minutes -->
+      <Field refID="CumACDerateElapsedTime"/>             <!--float32_t in Sec -->
+      <Field refID="CumTempDerateElapsedTime"/>           <!--float32_t in Sec -->
+      <Field refID="CumChargerEnergyReturn"/>             <!--float32_t MWH -->
+      <Field refID="CumEquivalentFullPowerHr"/>           <!--float32_t Hour -->
+      <Field refID="CumNumEqualisationCharges"/>          <!-- u16 -->
+      <Field refID="CumNumMaintenanceCharges"/>          <!-- u16 -->
+      <Field refID="CumNumCompletedCharges"/>             <!-- u16 -->
+      <Field refID="CumNumOpportunityCharges"/>           <!-- u16 -->
+      <Field refID="CumNumDCInterruptedCharges"/>         <!-- u16 -->
+      <Field refID="CumNumACInterruptedCharges"/>         <!-- u16 -->
+      <Field refID="CumNumEquivalentFullCharges"/>        <!-- u16 -->
+      <Field refID="CumNumChargersStartedWOAHTarget"/>    <!-- u16 -->
+      <Field refID="CumNumMaintenanceChargesInStorage"/> <!-- u16 -->
+      <Field refID="CumTimeInStorageMode"/>               <!--float32_t hours -->
+      <Field refID="AveEnergyReturned"/>                  <!--u16  WH -->
+      <Field refID="AveChargeTemperature"/>               <!--u16 Q2 C -->
+      <!--Field refID="ExternalSerialNum"/ -->   <!--Could be battery or vehicle number 16 Bytes-->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+      <Channel>
+        <ID>DATLOG_LifelogChannel</ID>
+      </Channel>		  
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="AcVoltage">
+    <TypeID>7</TypeID>
+    <FullName>AC Voltage</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="ACV"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+   <!-- State Record    -->
+   <DataRecord id="ChgStateRecord">
+    <TypeID>8</TypeID>
+    <FullName>Charge State Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="SystemState"/>              <!-- Top level Sm state       -->
+      <Field refID="PowerElectronicsState"/>    <!-- power electronics state  -->
+      <Field refID="CHGCurrent"/>               <!-- Filtered Current         -->
+      <Field refID="CHGVfilt"/>                 <!-- Filtered Voltage         -->
+      <Field refID="ACV"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Charge Module, Frequent Periodic Event -->
+  <DataRecord id="ChargingPeriodicRecord">
+    <TypeID>9</TypeID>
+    <FullName>Charging Periodic Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGAlgState"/>                  <!-- Present State       -->
+      <Field refID="CHGCurrent"/>                   <!-- Filtered Current    -->
+      <Field refID="CHGVcorr"/>                     <!-- Corrected Voltage   -->
+      <Field refID="CHGVfilt"/>                     <!-- Filtered Voltage    -->
+      <Field refID="CHGBatTemp"/>                   <!-- Battery Temperature -->
+      <Field refID="CHGDvdt"/>                      <!-- dV/dt               -->
+      <Field refID="CHGDidt"/>                      <!-- dI/dt               -->
+      <Field refID="CHGAhCumul"/>                   <!-- Cumulative Ah       -->
+      <Field refID="StatusIndicatorState"/>         <!-- <80%, >80%, Finishing -->
+      <Field refID="SystemState"/>                  <!-- Top level Sm state  -->
+      <Field refID="PowerElectronicsState"/>        <!-- power electronics state  -->
+      <Field refID="DerateStatus"/>                 <!-- status Bit Mask     -->
+      <Field refID="DeratingCurrent"/>              <!-- Amount of de-rating being applied  -->
+      <Field refID="InternalTemperatureForDerate"/> <!--Internal Temperature reading driving derate or if no derate, max  -->
+      <Field refID="InternalTempSource"/>           <!-- Chnnel providing detrating /Max        -->
+      <Field refID="ACV"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+   <!-- Slow Idle Event Record  -->
+   <DataRecord id="IdlePeriodicRecord">
+    <TypeID>10</TypeID>
+    <FullName>Idle Periodic Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="SystemState"/>                  <!-- Top level Sm state         -->
+      <Field refID="PowerElectronicsState"/>        <!-- power electronics state    -->
+      <Field refID="CHGAlgState"/>                  <!-- Present State              -->
+      <Field refID="CHGVfilt"/>                     <!-- Filtered Voltage           -->
+      <Field refID="CHGBatTemp"/>                   <!-- Battery Temperature        -->
+      <Field refID="InternalTemp"/>                 <!-- Internal Temperature Max   -->
+      <Field refID="ACV"/>                          <!-- AC Voltage                 -->
+      <Field refID="MaintenanceTimeToRecharge"/>   <!-- Time Remain to Topup cycle -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+    <!-- Charge Cycle Record V2 -->
+  <DataRecord id="ChgCycleRecordV2" chargeCycleRecord="True">
+    <TypeID>11</TypeID>
+    <FullName>Charge Cycle Record V2</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGCycleCount"/>                <!--Charge Cycle Count-->
+      <Field refID="SoftVersionMajor"/>             <!--Software Version Major-->
+      <Field refID="SoftVersionMinor"/>             <!--Software Version Minor-->
+      <Field refID="SoftVersionBuild"/>             <!--Software Version Build-->
+      <Field refID="SoftVersionVariant"/>           <!--Software Version Variant-->
+      <Field refID="CHGAlgID"/>                     <!--Algorithm ID-->
+      <Field refID="CHGAlgVersonMajor"/>            <!--Algorithm major Version-->
+      <Field refID="CHGAlgVersonMinor"/>            <!--Algorithm minor Version-->
+      <Field refID="StatusIndicatorState"/>         <!--Status indication-->
+      <Field refID="DATLOGIndicationCumulative"/>   <!--Status indication bit mask-->
+      <Field refID="CHGFaults"/>                    <!--Fault bit mask-->
+      <Field refID="DATLOGFaultsCumulative"/>       <!--Fault bit mask-->
+      <Field refID="DATLOGTerminationReason"/>      <!--Termination Reason-->
+      <Field refID="CHGBattVoltStart"/>             <!--Q8 Pack voltage-->
+      <Field refID="CHGBattVoltMax"/>               <!--max Voltage Q8 Pack Voltage-->
+      <Field refID="CHGChargeDuration"/>            <!--10 second resolution-->
+      <Field refID="CHGAmpHours"/>                  <!--Q4 Cycle-->
+      <Field refID="CHGMcuTempMin"/>                <!--Signed Q2-->
+      <Field refID="CHGMcuTempMax"/>                <!--Signed Q2-->
+      <Field refID="CHGIntTemp1Min"/>               <!--Signed Q2-->
+      <Field refID="CHGIntTemp1Max"/>               <!--Signed Q2-->
+      <Field refID="CHGIntTemp2Min"/>               <!--Signed Q2-->
+      <Field refID="CHGIntTemp2Max"/>               <!--Signed Q2-->
+      <Field refID="CHGBattTempMin"/>               <!--Signed Q2-->
+      <Field refID="CHGBattTempMax"/>               <!--Signed Q2-->
+      <Field refID="ACVMin"/>                       <!--Q2 Cycle-->
+      <Field refID="ACVMax"/>                       <!--Q2 Cycle-->
+      <Field refID="ChargeCycleType"/>              <!-- Complete/Maintenance bit/ equalise bit/ -->
+      <Field refID="ACDerateElapsedTime"/>          <!--unSigned in Sec-->
+      <Field refID="TempDerateElapsedTime"/>        <!--unSigned in Sec-->
+      <Field refID="IndicatingGreater80PctEndBattCurrent"/>     <!-- Signed Q8-->
+      <Field refID="IndicatingGreater80PctEndBattTemp"/>        <!--Signed Q2-->
+      <Field refID="IndicatingGreater80PctElapsedTime"/>        <!--unSigned in Sec-->
+      <Field refID="EnergyReturnedWhenIndicatingGreater80Pct"/> <!--unSigned Q4 AH -->
+      <Field refID="IndicatingFinishElapsedTime"/>              <!--unSigned in Sec -->
+      <Field refID="EnergyReturnedInIndicatedFinish"/>          <!--unSigned Q4 AH -->
+      <Field refID="EndOfChargeACVoltage"/>                     <!--unSigned Q2-->
+      <Field refID="EndOfChargeBattVoltage"/>                   <!--unSigned Q8-->
+      <Field refID="EndOfChargeBattCurrent"/>                   <!--Signed Q8-->
+      <Field refID="EndOfChargeBatteryTemp"/>                   <!--Signed Q2-->
+      <Field refID="EnergyReturned"/>                           <!--unSigned in WH -->
+      <Field refID="ExternalAHReturnTarget"/>                   <!--unSigned Q4 in AH -->
+      <Field refID="NumMaintenanceChargesInStorage"/>          <!--unSigned 8Q0  -->
+      <Field refID="TimeInStorageMode"/>                        <!--uint16_t in hours Q3 -->
+      <Field refID="TimeSinceLastMaintenanceCharge"/>           <!--uint16_t in hours Q3 -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+      <Channel>
+        <ID>DATLOG_LifelogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Alarm Record -->
+  <DataRecord id="AlarmRecord">
+    <TypeID>12</TypeID>
+    <FullName>Alarm Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="AlarmId"/>                  <!-- Alarm Id -->
+      <Field refID="StartStop"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Fault Record -->
+  <DataRecord id="FaultRecord">
+    <TypeID>13</TypeID>
+    <FullName>Alarm Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="FaultId"/>                  <!-- Fault Id -->
+      <Field refID="StartStop"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+
+  <!-- System State Machine Record -->
+  <DataRecord id="SystemSMRecord">
+    <TypeID>14</TypeID>
+    <FullName>System State Machine Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="SystemState"/>              <!-- System State -->
+      <Field refID="PowerElectronicsState"/>    <!-- Power Electronics State -->
+      <Field refID="AcVoltState"/>              <!-- AC Voltage State -->
+      <Field refID="BattVoltState"/>            <!-- Battery Voltage State -->
+      <Field refID="AcRelayState"/>             <!-- AC Relay State -->
+      <Field refID="PfcState"/>                 <!-- PFC State -->
+      <Field refID="DcRelayState"/>             <!-- DC Relay State -->
+      <Field refID="PfcVoltState"/>             <!-- PFC Voltage State -->
+      <Field refID="LlcCircuitState"/>          <!-- LLC Circuit State -->
+      <Field refID="LlcState"/>                 <!-- LLC State -->
+      <Field refID="AlgoSelState"/>             <!-- Algorithm Selection State -->
+      <Field refID="SM_VAC"/>                   <!-- AC Voltage signed Q2 -->
+      <Field refID="SM_VDC"/>                   <!-- DC Voltage signed Q7 -->
+      <Field refID="SM_ADC"/>                   <!-- DC Current signed Q7 -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Power Electronics State Machine Record -->
+  <DataRecord id="PowerElecSMRecord">
+    <TypeID>15</TypeID>
+    <FullName>Power Electronics State Machine Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="SystemState"/>              <!-- System State -->
+      <Field refID="PowerElectronicsState"/>    <!-- Power Electronics State -->
+      <Field refID="AcVoltState"/>              <!-- AC Voltage State -->
+      <Field refID="BattVoltState"/>            <!-- Battery Voltage State -->
+      <Field refID="AcRelayState"/>             <!-- AC Relay State -->
+      <Field refID="PfcState"/>                 <!-- PFC State -->
+      <Field refID="DcRelayState"/>             <!-- DC Relay State -->
+      <Field refID="PfcVoltState"/>             <!-- PFC Voltage State -->
+      <Field refID="LlcCircuitState"/>          <!-- LLC Circuit State -->
+      <Field refID="LlcState"/>                 <!-- LLC State -->
+      <Field refID="AlgoSelState"/>             <!-- Algorithm Selection State -->
+      <Field refID="LLCSD"/>                    <!-- LLC Shutdown/Antispark output -->
+      <Field refID="LLCThermalSD"/>             <!-- LLC Thermal Shutdown input -->
+      <Field refID="SM_VDC"/>                   <!-- DC Voltage signed Q7 -->
+      <Field refID="SM_ADC"/>                   <!-- DC Current signed Q7 -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Callibration Record -->
+  <DataRecord id="CalibrationRecord">
+    <TypeID>16</TypeID>
+    <FullName>Current Offset Calibration Record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CurrentCalibrationEventType"/>         <!--Enum of Types-->
+      <Field refID="BatCurrentSenseOffset"/>               <!--Signed Q10-->
+      <Field refID="ChargerCurrentSenseOffset"/>           <!--Signed Q10-->
+      <Field refID="ChargerCurrentCmdOffset"/>             <!--Signed Q10-->
+      <Field refID="BatteryCurrentOffsetCoeff"/>           <!--Signed Q12-->
+      <Field refID="ChargerCurrentOffsetCoeff"/>           <!--Signed Q12-->
+      <Field refID="CalibChgCurrent"/>                     <!--Signed Q8-->
+      <Field refID="BattCurrent"/>                         <!--Signed Q8-->
+      <Field refID="InternalTemperatureForCalibration"/>   <!-- Signed Q2-->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Charge Module Ignored Events, see CHG_LOG_IGNORE_EVENTS_HISTORY -->
+  <DataRecord id="ChgAlgIgnoredEventRecords">
+    <TypeID>17</TypeID>
+    <FullName>Charge Algorithm Event Record for Number of Ignored repeated events</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGAlgState"/>              <!-- Present State             -->
+      <Field refID="CHGIgnoredEventsCount"/>    <!-- Number of repeated events -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Charge Module, Frequent Periodic Event -->
+  <DataRecord id="ChargingPeriodicRecordV2">
+    <TypeID>18</TypeID>
+    <FullName>Charging Periodic Record v2</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGAlgState"/>                  <!-- Present State       -->
+      <Field refID="CHGCurrent"/>                   <!-- Filtered Current    -->
+      <Field refID="CHGVcorr"/>                     <!-- Corrected Voltage   -->
+      <Field refID="CHGVfilt"/>                     <!-- Filtered Voltage    -->
+      <Field refID="CHGBatTemp"/>                   <!-- Battery Temperature -->
+      <Field refID="CHGDvdt"/>                      <!-- dV/dt               -->
+      <Field refID="CHGDidt"/>                      <!-- dI/dt               -->
+      <Field refID="CHGAhCumul"/>                   <!-- Cumulative Ah       -->
+      <Field refID="StatusIndicatorState"/>         <!-- <80%, >80%, Finishing      -->
+      <Field refID="DerateStatus"/>                 <!-- status Bit Mask            -->
+      <Field refID="DeratingCurrent"/>              <!-- Amount of de-rating being applied  -->
+      <Field refID="InternalTemperatureForDerate"/> <!--Internal Temperature reading driving derate or if no derate, max  -->
+      <Field refID="InternalTempSource"/>           <!-- Chnnel providing detrating /Max    -->
+      <Field refID="ACV"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+   <!-- Slow Idle Event Record  -->
+   <DataRecord id="IdlePeriodicRecordV2">
+    <TypeID>19</TypeID>
+    <FullName>Idle Periodic Record V2</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="SysSmState"/>                   <!-- Top level Sys Sm state     -->
+      <Field refID="SysNormalSmState"/>             <!-- 2nd level Sys sub Sm state -->
+      <Field refID="SysNormalActiveSmState"/>       <!-- 3rd level Sys sub Sm state -->
+      <Field refID="ChgSmState"/>                   <!-- Top level Chg Sm state     -->
+      <Field refID="ChgNotstoppedSmState"/>         <!-- 2nd level Chg sub Sm state -->
+      <Field refID="ChgNotstoppedRunningSmState"/>  <!-- 3rd level Chg sub Sm state -->
+      <Field refID="InpSmState"/>                   <!-- Top level Inp Sm state     -->
+      <Field refID="InpAcValidSmState"/>            <!-- 2nd level Inp sub Sm state -->
+      <Field refID="InpAcValidEnabledSmState"/>     <!-- 3rd level Inp sub Sm state -->
+      <Field refID="CHGAlgState"/>                  <!-- Present State              -->
+      <Field refID="CHGVfilt"/>                     <!-- Filtered Voltage           -->
+      <Field refID="CHGBatTemp"/>                   <!-- Battery Temperature        -->
+      <Field refID="InternalTemp"/>                 <!-- Internal Temperature Max   -->
+      <Field refID="ACV"/>                          <!-- AC Voltage                 -->
+      <Field refID="MaintenanceTimeToRecharge"/>   <!-- Time Remain to Topup cycle -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Frequent Periodic, debug record  -->
+  <DataRecord id="LlcDebugRecord">
+   <TypeID>20</TypeID>
+   <FullName>Charge Periodic Debug Record </FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="LLC_VDCSet"/>                  <!-- DC Voltage signed Q7 -->
+     <Field refID="LLC_ADCSet"/>                  <!-- DC Current signed Q7 -->
+     <Field refID="LLC_VDCSense"/>                <!-- DC Voltage signed Q7 -->
+     <Field refID="LLC_ADCSense"/>                <!-- DC Current signed Q7 -->
+     <Field refID="LLC_RampState"/>
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <!-- Digital Control record   -->
+  <DataRecord id="DioControlRecord">
+   <TypeID>21</TypeID>
+   <FullName>Digital IO Control Record </FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="DioControlMask"/>           <!-- Dio control bit mask -->
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <!-- Vcc Record   -->
+  <DataRecord id="HalfVccRecord">
+   <TypeID>22</TypeID>
+   <FullName>Half Vcc Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="HalfVcc"/>   <!-- Vcc/2 -->
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <!-- Input Voltage Record -->
+  <DataRecord id="InpVoltageRecord">
+   <TypeID>23</TypeID>
+   <FullName>Input Voltage Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="ACV"/>   <!-- AC Voltage -->
+     <Field refID="PfcV"/>   <!-- PFC voltage -->
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <!-- T1 Record    -->
+  <DataRecord id="T1Record">
+   <TypeID>24</TypeID>
+   <FullName>T1 Input Stage Temperature Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="TempSensor1"/>   <!-- T1 Temperature Sensor -->
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <!-- T2 Record    -->
+  <DataRecord id="T2Record">
+   <TypeID>25</TypeID>
+   <FullName>T2 Output Stage Temperature Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="TempSensor2"/>   <!-- T2 Temperature Sensor -->
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <!-- Output Stage Record  -->
+  <DataRecord id="OutputStageRecord">
+   <TypeID>26</TypeID>
+   <FullName>Output Stage Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="InternalDCV"/>   <!-- Internal DC Voltage -->
+     <Field refID="InternalDCA"/>   <!-- Internal DC Current -->
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <!-- Battery Parameter Record -->
+  <DataRecord id="BattParamRecord">
+   <TypeID>27</TypeID>
+   <FullName>Battery Parameter Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="CHGVcorr"/>     <!-- Corrected Voltage   -->
+     <Field refID="CHGCurrent"/>   <!-- Filtered Current    -->
+   </Values>
+   <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+ </DataRecord>
+
+  <DataRecord id="Event">
+    <TypeID>28</TypeID>
+    <FullName>Logged run-length compressed event record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="EventRepeatCount"/>
+      <Field refID="EventId"/>
+      <Field refID="EventParams"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="CanErrors">
+    <TypeID>29</TypeID>
+    <FullName>Can error histogram record</FullName>
+    <Values>
+      <Field refID="CanErrorActiveCount"/>
+      <Field refID="CanErrorPassiveCount"/>
+      <Field refID="CanErrorBusOffCount"/>
+      <Field refID="CanErrorOverflowCount"/>
+      <Field refID="CanErrorRxOverflowCount"/>
+      <Field refID="CanErrorTxOverflowCount"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="VDiffStats">
+    <TypeID>30</TypeID>
+    <FullName>Voltage Sense Diff External vs Internal Stats record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="VDiffMaxAbs"/>
+      <Field refID="VDiffAvg"/>
+      <Field refID="VDiffUpdateCnt"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="IDiffStats">
+    <TypeID>31</TypeID>
+    <FullName>Current Sense Diff External vs Internal Stats record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="IDiffMaxAbs"/>
+      <Field refID="IDiffAvg"/>
+      <Field refID="IDiffUpdateCnt"/>
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <DataRecord id="AhReturnTargetSet">
+    <TypeID>32</TypeID>
+    <FullName>Ah Return Target Set record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+        <Field refID="ExternalAHReturnTarget"/>                   <!--unSigned Q4 in Ah -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- Callibration Record -->
+  <DataRecord id="CalibrationRecordV2">
+    <TypeID>33</TypeID>
+    <FullName>Current Offset Calibration Record Version 2</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CurrentCalibrationEventType"/>         <!--Enum of Types-->
+      <Field refID="BatCurrentSenseOffset"/>               <!--Signed Q10-->
+      <Field refID="ChargerCurrentSenseOffset"/>           <!--Signed Q10-->
+      <Field refID="ChargerCurrentCmdOffset"/>             <!--Signed Q10-->
+      <Field refID="ChargerCurrentCmdOffsetErr"/>          <!--Signed Q10-->
+      <Field refID="BatteryCurrentOffsetCoeff32"/>         <!--Signed Q24-->
+      <Field refID="ChargerCurrentOffsetCoeff32"/>         <!--Signed Q24-->
+      <Field refID="CalibChgCurrent"/>                     <!--Signed Q8-->
+      <Field refID="BattCurrent"/>                         <!--Signed Q8-->
+      <Field refID="InternalTemperatureForCalibration"/>   <!--Signed Q2-->
+      <Field refID="DeltaTSinceNvsSave"/>                  <!--Signed Q2-->
+      <Field refID="DeltaT"/>                              <!--Signed Q2-->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- V2 charge event record: added charge status indication field -->
+  <DataRecord id="ChgAlgEventRecordV2">
+    <TypeID>34</TypeID>
+    <FullName>Charge Algorithm Event Record V2</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+      <Field refID="CHGAlgState"/>                  <!-- Present State       -->
+      <Field refID="CHGEvent"/>                     <!-- Event               -->
+      <Field refID="CHGCurrent"/>                   <!-- Filtered Current    -->
+      <Field refID="CHGVcorr"/>                     <!-- Corrected Voltage   -->
+      <Field refID="CHGVfilt"/>                     <!-- Filtered Voltage    -->
+      <Field refID="CHGBatTemp"/>                   <!-- Battery Temperature -->
+      <Field refID="CHGDvdt"/>                      <!-- dV/dt               -->
+      <Field refID="CHGDidt"/>                      <!-- dI/dt               -->
+      <Field refID="CHGAhCumul"/>                   <!-- Cumulative Ah       -->
+      <Field refID="CHGKWhCumul"/>                  <!-- Cumulative KWh      -->
+      <Field refID="StatusIndicatorState"/>         <!--Status indication-->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+
+  <!-- NumberOfCells Record -->
+  <DataRecord id="NumOfCellsResult">
+    <TypeID>37</TypeID>
+    <FullName>Number of Cells record</FullName>
+    <Values>
+      <Field refID="Timestamp"/>
+        <Field refID="NumOfChgCells"/>                   <!--unSigned Q8  -->
+        <Field refID="NumOfLogCells"/>                   <!--unSigned Q8  -->
+        <Field refID="NumOfCellType"/>                   <!--unSigned Q8  -->
+        <Field refID="AlgEocVpc"/>                       <!--unSigned Q12  -->
+        <Field refID="ChgEocVpack"/>                     <!--unSigned Q8  -->
+        <Field refID="NumOfCfgCells"/>                   <!--unSigned Q0  -->
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>
+  </DataRecord>
+  
+ 
+  <!-- LLC Feedback Voltage Record-->
+  <DataRecord id="LLCFBVAtVBattThreshold">
+      <TypeID>38</TypeID>
+      <FullName>LLC Feedback voltage record</FullName>
+      <Values>
+        <Field refID="Timestamp"/>
+        <Field refID="LLCFBV"/>
+      </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>	  
+  </DataRecord>  
+   
+ <!-- T3 Record -->
+  <DataRecord id="T3Record">  
+   <TypeID>39</TypeID>
+   <FullName>T3 Output Stage Temperature Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="TempSensor3_Q2"/>   <!-- T3 Temperature Sensor -->
+   </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>   
+ </DataRecord>
+ 
+ 
+ <!-- T4 Record -->
+  <DataRecord id="T4Record">
+   <TypeID>40</TypeID>
+   <FullName>T4 Output Stage Temperature Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="TempSensor4_Q2"/>   <!-- T4 Temperature Sensor -->
+   </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>   
+ </DataRecord>
+ 
+ 
+  <!-- Fan tach record -->
+  <DataRecord id="FanTachRecord">
+   <TypeID>41</TypeID>
+   <FullName>Fan Speed Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="FANTach"/>        <!-- Fan tach measurement -->
+   </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>   
+ </DataRecord>
+ 
+ 
+  <!-- Fan current record   -->
+  <DataRecord id="FanCurrentRecord">
+   <TypeID>42</TypeID>
+   <FullName>Fan Current Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="FANCurrentQ8"/>   <!-- Fan Current Sensor -->
+   </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>   
+ </DataRecord>
+ 
+ 
+ <!-- Fan output voltage record  -->
+ <DataRecord id="FanOutVRecord">
+   <TypeID>43</TypeID>
+   <FullName>Fan Speed Command Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="FANOutVolts"/>   <!-- Fan Voltage -->
+   </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>   
+ </DataRecord>
+ 
+ 
+  <!-- Commanded Power record  -->
+ <DataRecord id="PwrCmdRecord">
+   <TypeID>44</TypeID>
+   <FullName>Power commanded record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="PowerCommanded"/>   <!-- Power commanded -->
+   </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>   
+ </DataRecord>
+ 
+  <!-- Commanded Power record  -->
+ <DataRecord id="DCDCModeRecord">
+   <TypeID>45</TypeID>
+   <FullName>DC-DC Mode (CC/CV) Record</FullName>
+   <Values>
+     <Field refID="Timestamp"/>
+     <Field refID="DCDCConstCurrModeQ12"/>   <!-- CC/CV mode pin voltage -->
+   </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+    </OutputStream>   
+ </DataRecord>
+ 
+ <!-- 1200 Charge Cycle parameters Record   -->
+  <DataRecord id="IC1200ChgCycleExtraRecord" chargeCycleRecord="True">
+    <TypeID>46</TypeID>
+    <FullName>Charge cycle record for extra 1200 parameters</FullName>
+    <Values>
+      <Field refID="CHGCycleCount"/>
+      <Field refID="CHGIntTemp3Min"/>                               <!--Signed Q2-->
+      <Field refID="CHGIntTemp3Max"/>                               <!--Signed Q2-->
+      <Field refID="CHGIntTemp4Min"/>                               <!--Signed Q2-->
+      <Field refID="CHGIntTemp4Max"/>                               <!--Signed Q2-->
+      <Field refID="FANHoursQ8"/>                                   <!--unSigned 32bit Q8 hrs --> 
+      <Field refID="FANEqFullVoltageHoursQ8"/>                          <!--unSigned 32bit Q8 hrs -->                   
+    </Values>
+    <OutputStream>
+      <Channel>
+        <ID>DATLOG_DatlogChannel</ID>
+      </Channel>
+      <Channel>
+        <ID>DATLOG_LifelogChannel</ID>
+      </Channel>		  
+    </OutputStream>	
+  </DataRecord>
+
+  <!-- Between Cycles Parameter Record   -->
+   <DataRecord id="BetweenCycRecord">
+     <TypeID>47</TypeID>
+     <FullName>Charge cycle record for the time between charges</FullName>
+     <Values>
+       <Field refID="CHGCycleCount"/>
+       <Field refID="TimeSinceLastChg"/>
+       <Field refID="TimeBattVFell"/>
+       <Field refID="BetweenChgStatus"/>
+       <Field refID="MinBattVBetweenCyc"/>
+     </Values>
+     <OutputStream>
+       <Channel>
+         <ID>DATLOG_DatlogChannel</ID>
+       </Channel>
+       <Channel>
+         <ID>DATLOG_LifelogChannel</ID>
+       </Channel>		  
+     </OutputStream>	
+   </DataRecord>
+
+</DataRecords>

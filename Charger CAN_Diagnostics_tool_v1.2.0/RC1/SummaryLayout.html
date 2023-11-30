@@ -1,0 +1,555 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta charset="utf-8" />
+<HTA:APPLICATION
+    APPLICATIONNAME="Run Exe or Bat files"
+    ID="Product Config Form"
+    VERSION="1.0"/>
+   
+<link href="Style.css" rel="stylesheet" type="text/css" />
+<title>Summary</title>
+
+<script src="Interpret.js"></script>
+<script src="RunCO_PCAN_DEMO.js"></script>
+<script src="FillSummaryLayout.js"></script>
+</head>
+
+<body>
+    <div class="tabsSection" id="TabsSection">
+        <button id="summaryButton" class="tabButton" onclick="SummaryButtonPressed();">Summary</button>
+        <button id="programButton" class="tabButton" onclick="ProgramButtonPressed();">Program</button>
+        <button id="downloadLogButton" class="tabButton" onclick="DownloadLogButtonPressed()">Download log</button>        
+    </div>
+    <button class="RefreshButton" id="RefreshButton" onClick="InitializeSummary()">Refresh</button>
+
+    <div id="Overlay" class="overlay">
+        <p id="OverlayText"></p>
+    </div>
+
+    <text id="ErrorText"></text>
+
+    <div id="ProgrammingSection">
+        <hr />
+        <!--
+        <table>
+            <tr>
+                <td>Programming security</td>
+                <td>
+                    <select onchange="OnProgramSecurityChanged()" class="dropdown-input" id="programmingSecuritySelect">
+                        <option value="NoAuth">No Auth</option>
+                        <option value="key">Enter key</option>
+                    </select>
+                    <input class="custom-input" id="programSecurityKey" type="text" />
+                </td>
+            </tr>
+            <tr>
+                <td>External Device Auth.</td>
+                <td>
+                    <select class="dropdown-input" id="externalDeviceAuthSelect" onchange="OnExternalDeviceAuthChange()">
+                        <option value="NoAuth">No external device authorization</option>
+                        <option value="default">Default customer key</option>
+                        <option value="key">Enter key</option>
+                    </select>
+                    <input class="custom-input" id="externalDeviceKey" type="text" />
+                </td>
+            </tr>
+        </table>
+
+        <hr class="greyLine" />
+        -->
+
+        <table class="programmingSectionTable">
+            <tbody>
+
+                <tr>
+                    <td>
+                        <text>Source file:</text>
+                    </td>
+                    <td>
+                        <div>
+                            <input id="programFileSelect" type="file" class="hidden"
+                                   onclick=''
+                                   onchange='document.getElementById("programFileLocation").value = this.value;
+                                             document.getElementById("programFileLocation").onchange()' />
+                            <button onclick='document.getElementById("programFileSelect").value = ""; document.getElementById("programFileSelect").click()'>Choose file</button>
+                            <input id="programFileLocation" class="fileLocation-input" type="text"
+                                   onchange='OnProgramFileChanged();' readonly />
+                            <span class="indicator" id="programFileIndicatorMessage">
+                                <img id="programFileIndicator" class="center" />
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+				<tr>
+					<td>
+						<hr class="thinLine" />
+						<button id="verifyInfoSection" class="collapsibleButton" onclick="ToggleVerifyInformation();">+  </button>
+						<hr class="thinLine" />
+					</td>
+				</tr>
+			</tbody>
+			<tbody id="verifyInfoContent" class="collapsibleContent">
+                <tr>
+                    <td>
+                        <text>CRC file (Optional):</text>
+                    </td>
+                    <td>
+                        <div>
+                            <input id="crcFileSelect" type="file" class="hidden"
+                                   onclick='this.value = ""'
+                                   onchange='document.getElementById("crcFileLocation").value = this.value;
+                                     document.getElementById("crcFileLocation").onchange();' />
+                            <button onclick='document.getElementById("crcFileSelect").click()'>Choose file</button>
+                            <input id="crcFileLocation" class="fileLocation-input" type="text"
+                                   onchange='OnCrcFileChanged();' readonly />
+                            <button class="hidden" id="crcClearButton" onclick='document.getElementById("crcFileLocation").value = ""; OnCrcFileChanged();'>Clear</button>
+                            <span class="indicator" id="crcFileIndicatorMessage">
+                                <img id="crcFileIndicator" class="center" />
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+				<tr>
+                    <td>
+                        <text>Parameter Check file (Optional):</text>
+                    </td>
+                    <td>
+                        <div>
+                            <input id="mmfSelect" type="file" class="hidden"
+                                   onclick='this.value = ""'
+                                   onchange='document.getElementById("mmfileLocation").value = this.value;
+											 document.getElementById("mmfileLocation").onchange();' />
+                            <button onclick='document.getElementById("mmfSelect").click()'>Choose file</button>
+                            <input id="mmfileLocation" class="fileLocation-input" type="text"
+                                   onchange='OnMMFileChanged();' readonly />
+                            <button class="hidden" 
+									id="mmfClearButton" 
+									onclick='document.getElementById("mmfileLocation").value = ""; OnMMFileChanged();'>Clear</button>
+                            <span class="indicator" id="mmfIndicatorMessage">
+                                <img id="mmfIndicator" class="center" />
+                            </span>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <hr class="greyLine" />
+
+        <table class="logTable">
+            <tr>
+                <td class="center">
+                    <text class="chargerListText" id="chargerListText"></text>
+                    <button id="programStartButton" onclick="ProgramStartButtonPressed()">Start</button>
+                </td>
+            </tr>
+            <tr>
+                <td class="center">
+                    <progress id="programmingProgress" value="0" max="100"></progress>
+                </td>
+            </tr>
+            <tr>
+                <td class="center">
+                    <div id="programmingLog" class="logBox">
+                        <text id="ProgrammingLogText"></text>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div id="LogDownloadSection">
+        <hr />
+        <table class="logTable">
+            <tr>
+                <td class="center">
+                    <button id="logDownloadButton" onclick="DownloadLogs(false)">Download from single device</button>
+                </td>
+            </tr>
+            <tr>
+                <td class="center">
+                    <button id="logDownloadStackButton" onclick="DownloadLogs(true)">Download from all devices on stack</button>
+                </td>
+            </tr>
+            <tr>
+                <td class="center">
+                    <div id="logDownloadLog" class="logBox">
+                        <text id="logDownloadLogText"></text>
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <hr />
+    <div id="SummarySection">
+        <div id="faultsAndAlarmsSection">
+            <table id="faultsAndAlarmsSection_table">
+                <!-- Table rows will be added here from javascript code-->
+            </table>
+        </div>
+        <div id="summaryPart1" class="summaryPart1">
+            <hr class="greyLine" />
+            <table>
+                <thead>
+                    <tr>
+                        <td><b>Product information</b></td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Device serial number">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Serial number
+                        </td>
+                        <td id="serialNumber"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Device model name">
+                                <img src="Support/info-24px.svg" />
+                            </span>
+                            Model
+                        </td>
+                        <td id="chargerModel"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Delta-Q FGA">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Delta-Q FGA
+                        </td>
+                        <td id="deltaQFGA"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Device software version and variant">
+                                <img src="Support/info-24px.svg" />
+                            </span>  SW version and variant
+                        </td>
+                        <td id="swVersionAndVariant"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <hr class="thinLine" />
+                            <span class="toolTip" title="Customer product information are a string of characters that identifies the device according to customer standards. The contents may be read via CANopen.">
+                                <img src="Support/info-24px.svg" />
+                            </span>
+                            <button id="customerInfoSection" class="collapsibleButton" onclick="ToggleCustomerInformation();">+ Customer product information</button>
+                            <hr class="thinLine" />
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody id="customerInfoContent" class="collapsibleContent">
+                    <tr>
+                        <td>
+                            Customer HW part number
+                        </td>
+                        <td id="customerHWPartNumber"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Customer SW part number
+                        </td>
+                        <td id="customerSWPartNumber"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Customer assembly part number
+                        </td>
+                        <td id="customerAssemblyPartNumber"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Customer model name
+                        </td>
+                        <td id="customerModelName"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Customer serial number
+                        </td>
+                        <td id="customerSerialNumber"></td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Overall CRC
+                        </td>
+                        <td id="overallCRC"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <hr class="greyLine" />
+        <div>
+            <table>
+                <tbody>
+                    <tr>
+                        <td><b>Configuration</b></td>
+                        <td>
+                            <div class="modifyButtons">
+                                <button id="modifyButton" onclick="ModifyButtonPressed()">Modify</button>
+                                <div id="submitAndCancelButton"><button onclick="SubmitButtonPressed()">Submit</button><button onclick="CancelModifyMode()">Cancel</button></div>
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody id="summaryPart2" class="summaryPart2">
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Active algo">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Active algo
+                        </td>
+                        <td>
+                            <text id="activeAlgo"></text>
+                            <select class="dropdown-input" id="activeAlgo_modify" onclick='this.style.color = "black"' onchange='OnAlgoDropDownChanged();'>
+                                <!--List of available algos will be added here-->
+                            </select>
+                            <span id="algoWarningIcon" class="toolTip" title="No Algo selected. The charger will not charge.">
+                                <img src="Support/Warning.svg" />
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Defines the capacity of the connected battery pack in Ampere-hours. This value overrides a value in the algorithm, if any.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Battery pack capacity (Ah)
+                        </td>
+                        <td>
+                            <text id="batteryCapacity"></text>
+                            <div class="inline">
+                                <input id="batteryCapacity_modify" class="custom-input" type="text">
+                                <button id="batteryCapacity_clear" onclick='ClearDsId("172");  InitializeSummary();'>Clear</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Defines the voltage that the charger should use to scale the algorithm in Volts.  This value overrides the nominal 2Vpc scaling that the charger uses. New table entries can be created in the CIL. Valid target voltage values are 50% or more of the nominal charger voltage.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Battery pack target voltage (V)
+                        </td>
+                        <td>
+                            <text id="batteryPackTargetVoltage"></text>
+                            <div class="inline">
+                                <input id="batteryPackTargetVoltage_modify" class="custom-input" type="text">
+                                <button id="batteryPackTargetVoltage_clear" onclick='ClearDsId("174");  InitializeSummary();'>Clear</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Defines the maximum current that the charger should deliver in Amperes.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Max current (A)
+                        </td>
+                        <td>
+                            <text id="maxCurrent"></text>
+                            <div class="inline">
+                                <input id="maxCurrent_modify" class="custom-input" type="text">
+                                <button id="maxCurrent_clear" onclick='ClearDsId("297"); InitializeSummary()'>Clear</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Defines the maximum voltage that the charger can achieve. For example, if an algo request 33.6V (2.8Vpc of a 24V charger), but the Maximum Votlage Limit is set to  29V, then charger can only supply 29V.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Max voltage (V)
+                        </td>
+                        <td>
+                            <text id="maxVoltage"></text>
+                            <div class="inline">
+                                <input id="maxVoltage_modify" class="custom-input" type="text">
+                                <button id="maxVoltage_clear" onclick='ClearDsId("309"); InitializeSummary();'>Clear</button>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="This parameter defines the time before the charger shuts down after AC is removed while it is connected to a battery.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Charger shutdown time (s)
+                        </td>
+                        <td>
+                            <text id="shutdownTime"></text>
+                            <input id="shutdownTime_modify" class="custom-input" type="text" list="shutdownTimeList">
+                            <datalist id="shutdownTimeList">
+                                <option value="Never">
+                            </datalist>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Sets the maximum time that the charger remains in a ‘suspended’ state after losing AC during a charge cycle. If this period expires before AC returns, then the charge cycle ends and the next charge will be part of a new charge cycle. If AC returns while the charger is in the suspended state, the same charge cycle will resume.">
+                                <img src="Support/info-24px.svg" />
+                            </span> AC suspend time
+                        </td>
+                        <td>
+                            <text id="acCycleStopTime"></text>
+                            <select class="dropdown-input" id="acCycleStopTime_modify" onclick='this.style.color = "black"'>
+                                <option class="black" value="Instant">Instant</option>
+                                <option class="black" value="1000">1 second</option>
+                                <option class="black" value="600000">10 minutes</option>
+                                <option class="black" value="Never">Never</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Provides the charger with an estimate of the battery cable resistance, which allows it to adjust its output such that the voltage at the battery is as expected.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Cable resistance (mΩ)
+                        </td>
+                        <td>
+                            <text id="cableResistance"></text>
+                            <input id="cableResistance_modify" class="custom-input" onclick='document.getElementById("calculateResistanceSection").style.display = "block";
+                                                                document.getElementById("calculateResistanceSection").setAttribute("resultLocationId", "cableResistance_modify")'>
+                        </td>
+                    </tr>
+                </tbody>
+                <tbody id="summaryPart3" class="summaryPart3">
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="-	This parameter is the charger’s CANopen node ID. Other nodes in the network should be configured to expect a charger at this ID or this ID should be configured to match the expected charger node ID of the other devices (nodes) on the network.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Node ID
+                        </td>
+                        <td>
+                            <text id="nodeId"></text>
+                            <div class="inline">
+                                <input id="nodeId_modify" class="custom-input" type="number">
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="-	Determines the CAN bit rate of the charger. -	When this field is modified, all other devices to the network will also be modified to use that bit rate.">
+                                <img src="Support/info-24px.svg" />
+                            </span>  Baud rate (kb/s)
+                        </td>
+                        <td>
+                            <text id="baudRate"></text>
+                            <input id="baudRate_modify" list="baudRates" class="custom-input" type="number">
+                            <datalist id="baudRates">
+                                <option value="125">125 kb/s</option>
+                                <option value="250">250 kb/s</option>
+                                <option value="500">500 kb/s</option>
+                                <option value="1000">1000 kb/s</option>
+                            </datalist>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="calculateResistanceSection">
+            <hr class="greyLine" />
+            <table>
+                <tr>
+                    <td>Wire length (ft)</td>
+                    <td><input type="text" id="wireLength"></td>
+                </tr>
+                <tr>
+                    <td>Wire gauge</td>
+                    <td><input type="text" id="gauge"></td>
+                </tr>
+                <tr>
+                    <td>Connector resistance</td>
+                    <td><input type="text" id="connector"></td>
+                </tr>
+                <tr>
+                    <td>
+                        <button onclick='document.getElementById("calculateResistanceSection").style.display = "none";
+                            document.getElementById("cableResistance_modify").value = ComputeWireResistance(parseInt(document.getElementById("gauge").value),
+                                                                    parseInt(document.getElementById("wireLength").value),
+                                                                    parseInt(document.getElementById("connector").value),
+                                                                    "Feet")'>
+                            Calculate
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+
+        <div id="summaryCumulativeCounters" class="summaryCumulativeCounters">
+            <hr class="greyLine" />
+            <table id="cumulativeCountersTable">
+                <colgroup>
+                    <col class="summaryCumulativeCountersCol1">
+                    <col class="summaryCumulativeCountersCol2">
+                    <col class="summaryCumulativeCountersCol3">
+                </colgroup>
+                <tbody>
+                    <tr>
+                        <td>
+                            <span class="toolTip" title="Battery counters will only be shown in software versions 9.5 and above.">
+                                <img src="Support/info-24px.svg" />
+                            </span>
+                            <b>Cumulative counters</b>
+                        </td>
+                        <td><b>Charger</b></td>
+                        <td id="batteryCumulativeCountersColumn"><b>Battery</b></td>
+                    </tr>
+                    <tr>
+                        <td>Total charges</td>
+                        <td id="totalCharges_charger"></td>
+                        <td id="totalCharges_battery"></td>
+                    </tr>
+                    <tr>
+                        <td>Completed charges</td>
+                        <td id="completedCharges_charger"></td>
+                        <td id="completedCharges_battery"></td>
+                    </tr>
+                    <tr>
+                        <td>Opportunistic charges</td>
+                        <td id="opportunisticCharges_charger"></td>
+                        <td id="opportunisticCharges_battery"></td>
+                    </tr>
+                    <tr>
+                        <td>Equalisation charges</td>
+                        <td id="equalisationCharges_charger"></td>
+                        <td id="equalisationCharges_battery"></td>
+                    </tr>
+                    <tr>
+                        <td>AC interrupted charges</td>
+                        <td id="acInterruptedCharges_charger"></td>
+                        <td id="acInterruptedCharges_battery"></td>
+                    </tr>
+                    <tr>
+                        <td>DC interrupted charges</td>
+                        <td id="dcInterruptedCharges_charger"></td>
+                        <td id="dcInterruptedCharges_battery"></td>
+                    </tr>
+                    <tr>
+                        <td>Maintenance charges</td>
+                        <td id="maintenanceCharges_charger"></td>
+                        <td id="maintenanceCharges_battery"></td>
+                    </tr>
+                    <tr>
+                        <td>Equivalent full charges</td>
+                        <td id="equivalentFullCharges_charger"></td>
+                        <td id="equivalentFullCharges_battery"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div id="#AvailableChargingProfiles_section">
+            <hr class="greyLine" />
+            <table id="#AvailableChargingProfiles_table">
+                <!-- Table rows will be added here from javascript code-->
+            </table>
+        </div>
+    </div>
+
+    <script>Initialize()</script>
+
+</body>
+</html>

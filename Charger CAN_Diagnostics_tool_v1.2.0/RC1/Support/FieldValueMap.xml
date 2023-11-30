@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FieldValueMap>
+
+    <!-- Shared Fields In different records -->
+    <Map colName="Event">
+
+        <Translate OldValue="0" NewValue="Invalid"></Translate> 
+        <Translate OldValue="1" NewValue="Start"></Translate> 
+
+        <Translate OldValue="2" NewValue="Enter"></Translate> 
+        <Translate OldValue="3" NewValue="Exit"></Translate> 
+
+        <Translate OldValue="4" NewValue="Continue"></Translate> 
+        <Translate OldValue="5" NewValue="DcUndervoltage"></Translate> 
+        <Translate OldValue="6" NewValue="DcOvervoltage"></Translate> 
+
+        <Translate OldValue="7" NewValue="MonitorAFired"></Translate> 
+        <Translate OldValue="8" NewValue="MonitorBFired"></Translate> 
+        <Translate OldValue="9" NewValue="MonitorCFired"></Translate> 
+
+        <Translate OldValue="10" NewValue="TimerAExpired"></Translate> 
+        <Translate OldValue="11" NewValue="TimerBExpired"></Translate> 
+        <Translate OldValue="12" NewValue="TimerCExpired"></Translate> 
+        <Translate OldValue="13" NewValue="TimerDExpired"></Translate> 
+
+        <Translate OldValue="14" NewValue="MonitorDFired"></Translate> 
+
+        <Translate OldValue="15" NewValue="Free15"></Translate> 
+
+        <Translate OldValue="16" NewValue="Free16"></Translate> 
+        <Translate OldValue="17" NewValue="Free17"></Translate> 
+        <Translate OldValue="18" NewValue="Free18"></Translate> 
+        <Translate OldValue="19" NewValue="Free19"></Translate> 
+        <Translate OldValue="20" NewValue="Free20"></Translate> 
+        <Translate OldValue="21" NewValue="Free21"></Translate> 
+        <Translate OldValue="22" NewValue="Free22"></Translate> 
+        <Translate OldValue="23" NewValue="Free23"></Translate> 
+        <Translate OldValue="24" NewValue="Free24"></Translate> 
+        <Translate OldValue="25" NewValue="Free25"></Translate> 
+        <Translate OldValue="26" NewValue="Free26"></Translate> 
+        <Translate OldValue="27" NewValue="Free27"></Translate> 
+        <Translate OldValue="28" NewValue="Free28"></Translate> 
+        <Translate OldValue="29" NewValue="Free29"></Translate> 
+        <Translate OldValue="30" NewValue="Free30"></Translate> 
+        <Translate OldValue="31" NewValue="Free31"></Translate> 
+
+        <Translate OldValue="32" NewValue="NumAlgoEvents"></Translate> 
+
+        <Translate OldValue="33" NewValue="OpStart"></Translate> 
+        <Translate OldValue="34" NewValue="OpStop"></Translate> 
+        <Translate OldValue="35" NewValue="OpResume"></Translate> 
+        <Translate OldValue="36" NewValue="OpSuspend"></Translate> 
+        <Translate OldValue="37" NewValue="OpSetAlgorithm"></Translate> 
+        <Translate OldValue="38" NewValue="OpSetBatCap"></Translate> 
+        <Translate OldValue="39" NewValue="OpSetState"></Translate> 
+        <Translate OldValue="40" NewValue="OpUnderCurrent"></Translate> 
+
+        <Translate OldValue="41" NewValue="OpExpireTimer"></Translate> 
+        <Translate OldValue="42" NewValue="OpFireMonitor"></Translate> 
+        <Translate OldValue="43" NewValue="OpRatchetFired"></Translate> 
+        <Translate OldValue="44" NewValue="OpAlgoStateChanged"></Translate> 
+        <Translate OldValue="45" NewValue="OpResumeTransitEnd"></Translate> 
+
+        <Translate OldValue="46" NewValue="OpLogChargePeriodic"></Translate> 
+        <Translate OldValue="47" NewValue="OpLogIdlePeriodic"></Translate> 
+        <Translate OldValue="48" NewValue="OpEndChargeCycle"></Translate> 
+        <Translate OldValue="49" NewValue="OpStartChargeCycle"></Translate> 
+
+    </Map>
+
+</FieldValueMap>
