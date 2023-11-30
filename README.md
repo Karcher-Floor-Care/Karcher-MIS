@@ -9,7 +9,7 @@ Install Peak drivers for Windows machines from the website [HERE](https://www.pe
 
   
 Instructions for use are found in the "Karcher MIS User Guide"  
-Additional detailed instructions for programming TREX machines are provided in the relevant guides.  
+Additional detailed instructions for programming CV60/1 machines are provided in the relevant guides.  
 The software for programming Charger Configurations from Delta-Q has been bundled with supporting documents.  
 
 
