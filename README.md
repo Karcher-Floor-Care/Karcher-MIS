@@ -8,10 +8,9 @@ Install 'pcanview.exe'.  This is located in the 'pcanview' folder(requirement fo
 Install Peak drivers for Windows machines from the website [HERE](https://www.peak-system.com/quick/DrvSetup)(required for programming CV60/1)  
 
   
-Instructions for use are found in the "Trex Flotilla Service Tool User Guide"  
+Instructions for use are found in the "Karcher MIS User Guide"  
 Additional detailed instructions for programming TREX machines are provided in the relevant guides.  
 The software for programming Charger Configurations from Delta-Q has been bundled with supporting documents.  
-
 
 
 # Note
