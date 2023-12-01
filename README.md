@@ -1,5 +1,4 @@
 # Instructions for installation
-
 Install the latest release of the application using the executable found in the 'Releases' tab([Here](https://github.com/Karcher-Floor-Care/Karcher-MIS/releases/latest)).    
 Once the application has been downloaded click the "Download Documentation" button at the top-right corner to download relevant firmware, drivers, and user guides to be referenced below.  
 
@@ -14,4 +13,5 @@ The software for programming Charger Configurations from Delta-Q has been bundle
 
 
 # Note
-This application has been enabled with auto-updates. If a new release is detected the application will prompt the user to download and install the newest version.
+This application has been enabled with auto-updates. If a new release is detected the application will prompt the user to download and install the newest version.  
+**Must manually update to v1.0.2 to enable auto-updates.\
