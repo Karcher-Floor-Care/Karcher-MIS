@@ -14,4 +14,4 @@ The software for programming Charger Configurations from Delta-Q has been bundle
 
 # Note
 This application has been enabled with auto-updates. If a new release is detected the application will prompt the user to download and install the newest version.  
-**Must manually update to v1.0.2 to enable auto-updates.\
+**Must manually update to v1.0.2 to enable auto-updates.
