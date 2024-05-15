@@ -1,6 +1,7 @@
 # Instructions for installation
 Install the latest release of the application using the executable found in the 'Releases' tab([Here](https://github.com/Karcher-Floor-Care/Karcher-MIS/releases/latest)).    
 Once the application has been downloaded click the "Download Documentation" button at the top-right corner to download relevant firmware, drivers, and user guides to be referenced below.  
+**When pressing Download Documentation you may be asked to replace your current version of Karcher-MIS-main.zip. Always click yes as this will result in the newest versions being downloaded**
 
 Install FTDI drivers using the 'CDM212364_Setup.exe' found in the 'FTDI-Driver' folder(required for programming BRC 45/38)  
 Install 'pcanview.exe'.  This is located in the 'pcanview' folder(requirement for CV60/1)  
