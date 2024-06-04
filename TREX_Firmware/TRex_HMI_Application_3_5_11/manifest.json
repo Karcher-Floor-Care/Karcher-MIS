@@ -48,7 +48,7 @@
         "filename": "external_resource_main.hex",
         "targetSpace": 1,
         "type": "W25ExtFlash",
-	"eraseTimeout": 60000,
+	"eraseTimeout": 90000,
 	"dataTimeout": 5000,
         "dataRetries": 3,
 	"hexBlock":256,
