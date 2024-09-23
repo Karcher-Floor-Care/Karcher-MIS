@@ -1,0 +1,61 @@
+{
+  "connectionType": "can",
+  "defaultRate": 500000,
+  "masterConfig": {
+    "transport": {
+        "type": "j1939",
+        "connection": {
+            "type": "generic"
+        }
+    },
+    "suppressTransactionErrors": false,
+    "retryOnException": true,
+    "maxConcurrentRequests": 1,
+    "defaultUnit": 1,
+    "defaultMaxRetries": 1,
+    "defaultTimeout": 1000
+  },
+
+  "targets": [
+  {
+    "id": 129,
+    "title": "HMI",
+    "config": {
+
+      "supportsPassThru": false,
+      "code": "any",
+      "type": "",
+
+      "enquireTimeout": 100,
+      "selectTimeout": 500,
+      "finishTimeout": 500
+
+    }, 
+    "spaces": [
+      {
+        "title": "Application",
+        "filename": "TREX_HMI_PIC24.X.production.hex.upgrade.hex",
+        "targetSpace": 0,
+        "type": "PIC24Application",
+	"eraseTimeout": 160000,
+        "dataTimeout": 15000,
+        "hexBlock":256,
+	"sendBlock":259,
+        "verifyTimeout": 10000
+      },
+      {
+        "title": "Flash ",
+        "filename": "external_resource_main.hex",
+        "targetSpace": 1,
+        "type": "W25ExtFlash",
+	"eraseTimeout": 90000,
+	"dataTimeout": 5000,
+        "dataRetries": 3,
+	"hexBlock":256,
+	"verifyTimeout":150000
+      }
+    ]
+    }
+
+  ]
+}
